@@ -1,0 +1,35 @@
+#!/bin/bash
+MODE=Release
+function create_makefile
+{
+	local REL_CONF=""
+	local REL="$1"
+	local OPT="$2"
+
+	if [ $REL == "Release" ]
+		then REL_CONF="release"
+		else REL_CONF="debug"
+	fi
+
+	echo "Setup on $REL_CONF mode"
+
+	sed \
+		-e "s/{{REL}}/$REL/g" \
+		-e "s/{{REL.CONF}}/$REL_CONF/g" \
+		-e "s/{{OPT}}/$OPT/g" \
+		Makefile.shared > Makefile
+	#makefile=$(echo -e $makefile | sed -e "s/{{OPTIONS}}/$2/g")
+}
+
+case $1 in
+--debug)
+	MODE=Debug
+	;;
+--help)
+	echo -e "Usage: config [OPTIONS]"
+	echo -e "\t--debug: Setup in debug mode"
+	exit
+	;;
+esac
+
+create_makefile $MODE "$@"
