@@ -30,7 +30,7 @@ typedef struct {
     Local<Array> items;
     Isolate *isolate;
     Function *cb;
-} ADD_FS_ITR;
+} ADD_TL_ITR;
 
 Local<Object>
 create_timeline_item(Local<Context> context, Isolate *isolate, 
@@ -99,7 +99,7 @@ create_timeline_item(Local<Context> context, Isolate *isolate,
 
 void
 dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
-                 const char *action, ADD_FS_ITR *itr) {
+                 const char *action, ADD_TL_ITR *itr) {
     Local<Value> name_key, date_key, key;
     Local<Object> item, arr_item;
     Local<Value> it_val;
@@ -214,12 +214,11 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
         itr->cb->Call(context, context->Global(), 1, args);
     
 err:
-
     free(path);
 }
 
 static TSK_WALK_RET_ENUM
-sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
+sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
 {
 //    Local<Object> item;
 //    Local<Value> key;
@@ -287,11 +286,10 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
 {
     TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
     TSK_FS_INFO *fs = NULL;
-    TSK_OFF_T imgaddr = 0;
-    TSK_INUM_T inode = 0;
-    
+    TskOptions *opts;
+
     // Walk configurations
-    ADD_FS_ITR itr;
+    ADD_TL_ITR itr;
     int name_flags = TSK_FS_DIR_WALK_FLAG_ALLOC |
                      TSK_FS_DIR_WALK_FLAG_UNALLOC |
                      TSK_FS_DIR_WALK_FLAG_RECURSE;
@@ -301,15 +299,10 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
     Local<Value> ret;
 
     // Process input args
-    if (args.Length() > 0 && !args[0]->IsUndefined()) {
-        if (!args[0]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_OFFSET_NOT_NUMBER);
-        }
-        imgaddr = args[0]->NumberValue();
-    }
+    opts = new TskOptions(self->_img, args, 0);
 
     // Check image type
-    fs = tsk_fs_open_img(self->_img, imgaddr * self->_img->sector_size, fstype);
+    fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);
     if (fs == NULL) {
         if (tsk_error_get_errno() == TSK_ERR_FS_UNKTYPE) {
             ret = Boolean::New(isolate, false);
@@ -319,32 +312,26 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
 
+    if (!opts->has_inode()) {
+        opts->set_inode(fs->root_inum);
+    }
+
     // Init iterator
     itr.i = 0;
     itr.items = Array::New(isolate);
     itr.isolate = isolate;
     itr.cb = NULL;
 
-    // Select inode
-    if (args.Length() > 1 && !args[1]->IsUndefined()) {
-        if (!args[1]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-        }
-        inode = args[1]->NumberValue();
-    } else {
-        inode = fs->root_inum;
-    }
-
     /* Callback function */
-    if (args.Length() > 2 && !args[2]->IsUndefined()) {
-        if (!args[2]->IsFunction()) {
+    if (args.Length() > 1 && !args[1]->IsUndefined()) {
+        if (!args[1]->IsFunction()) {
             NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
         }
-        itr.cb = Function::Cast(*args[2]);
+        itr.cb = Function::Cast(*args[1]);
     }
 
     // Iterate partitions and add them inside the list
-    if (tsk_fs_dir_walk(fs, inode, 
+    if (tsk_fs_dir_walk(fs, opts->get_inode(), 
         (TSK_FS_DIR_WALK_FLAG_ENUM) name_flags,
         (TSK_FS_DIR_WALK_CB) sort_fs_events, &itr)) {
         tsk_error_print(stderr);
@@ -358,6 +345,7 @@ err:
     if (fs) {
         fs->close(fs);
     }
+    delete opts;
     args.GetReturnValue().Set(ret);
 }
 

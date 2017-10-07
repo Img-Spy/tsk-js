@@ -45,31 +45,23 @@ add_content(TSK_FS_FILE * fs_file, TSK_OFF_T a_off, TSK_DADDR_T addr,
 void TSK::Get(const FunctionCallbackInfo<Value>& args)
 {
     TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
-    TSK_FS_INFO *fs = NULL;
-    TSK_OFF_T imgaddr = 0;
-    TSK_INUM_T inode = 0;
-    TSK_FS_FILE *fs_file = NULL;
-
-    // Walk configurations
-    ADD_CONTENT content;
-//    int fls_flags = TSK_FS_FLS_DIR | TSK_FS_FLS_FILE;
-//    int32_t sec_skew = 0;
     int fw_flags = 0;
+    TSK_FS_INFO *fs = NULL;
+    TSK_FS_FILE *fs_file = NULL;
+    TskOptions *opts;
+    ADD_CONTENT content;
 
     Isolate* isolate = args.GetIsolate();
     TSK *self = TSK::Unwrap<TSK>(args.Holder());
     Local<Value> ret;
 
-    // Process input args
-    if (args.Length() > 0 && !args[0]->IsUndefined()) {
-        if (!args[0]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_OFFSET_NOT_NUMBER);
-        }
-        imgaddr = args[0]->NumberValue();
+    opts = new TskOptions(self->_img, args, 0);
+    if (opts->has_error()) {
+        
     }
 
     // Check image type
-    fs = tsk_fs_open_img(self->_img, imgaddr * self->_img->sector_size, fstype);
+    fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);
     if (fs == NULL) {
         if (tsk_error_get_errno() == TSK_ERR_FS_UNKTYPE) {
             ret = Boolean::New(isolate, false);
@@ -79,20 +71,15 @@ void TSK::Get(const FunctionCallbackInfo<Value>& args)
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
 
-    if (args.Length() > 1 && !args[1]->IsUndefined()) {
-        if (!args[1]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-        }
-        inode = args[1]->NumberValue();
-    } else {
-        inode = fs->root_inum;
+    if (!opts->has_inode()) {
+        opts->set_inode(fs->root_inum);
     }
-
+    
     // Init iterator
     content.buffer = NULL;
     content.size = 0;
     
-    fs_file = tsk_fs_file_open_meta(fs, NULL, inode);
+    fs_file = tsk_fs_file_open_meta(fs, NULL, opts->get_inode());
     if (!fs_file) {
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
@@ -115,6 +102,7 @@ err:
     if (fs_file) {
         tsk_fs_file_close(fs_file);
     }
+    delete opts;
     args.GetReturnValue().Set(ret);
 }
 

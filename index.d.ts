@@ -4,14 +4,19 @@ declare module 'tsk-js' {
         constructor(imgfile: string);
 
         analyze(): ImgInfo;
-        list(offset?: number, inode?: number): Array<ImgFile>;
-        get(offset?: number, inode?: number): Buffer;
-        timeline(offset?: number, inode?: number, cb?: TimelineCallback): Array<TimelineItem>;
+        list(opts: TskOptions): Array<ImgFile>;
+        get(opts?: TskOptions): Buffer;
+        timeline(opts?: TskOptions, cb?: TimelineCallback): Array<TimelineItem>;
     }
 
     export interface ImgInfo {
         type: "disk" | "partition";
         partitions?: Array<PartitionInfo>;
+    }
+
+    export interface TskOptions {
+        imgaddr?: number;
+        inode?: number;
     }
 
     export interface PartitionInfo {

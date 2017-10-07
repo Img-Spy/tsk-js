@@ -37,6 +37,7 @@ TSK::TSK(Isolate *isolate, Local<String> input)
     this->_img = tsk_img_open(1, &args->imgfile, imgtype, (unsigned int) 0);
     
     if(!this->_img) {
+        tsk_error_print(stderr);
         NODE_THROW_EXCEPTION_err(isolate, _E_M_IMG_NOT_FOUND);
     }
 

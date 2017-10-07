@@ -42,6 +42,31 @@ CONSTRUCT_ARGS *CONSTRUCT_ARGS_new(v8::Isolate *isolate,
                                    v8::Local<v8::String> input);
 void CONSTRUCT_ARGS_free(CONSTRUCT_ARGS *args);
 
+
+
+class TskOptions : public node::ObjectWrap {
+public:
+    TskOptions(TSK_IMG_INFO *img, 
+               const v8::FunctionCallbackInfo<v8::Value>& args, int index);
+    ~TskOptions();
+
+    TSK_OFF_T get_offset();
+    TSK_INUM_T get_inode();
+    bool has_inode();
+    void set_inode(const TSK_INUM_T inode);
+    
+    bool has_error();
+
+private:
+    // Internal
+    int _err = 0;
+    TSK_IMG_INFO *_img;
+    TSK_OFF_T _imgaddr = 0;
+    TSK_INUM_T _inode = (TSK_INUM_T)-1;
+
+};
+
+
 }
 
 #endif

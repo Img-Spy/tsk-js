@@ -41,6 +41,8 @@ namespace tsk_utl {
 // LS ERRORS
 #define _E_M_LS_OFFSET_NOT_NUMBER \
     "List offset must be a number."
+#define _E_M_LS_OPTIONS_NOT_OBJECT \
+    "List options must be an object."
 #define _E_M_LS_INODE_NOT_NUMBER \
     "List inode must be a number."
     

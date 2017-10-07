@@ -17,19 +17,20 @@ const fs = require('fs');
                 .filter(partition => partition.hasFs)
                 .forEach(partition => {
                     console.log(`List files for partition ${partition.description}`);
-                    _list(img, partition.start);
+                    _list(img, { imgaddr: partition.start });
                 });
         } else {
             //list(img);
         }
 
-        function _list(img, offset, inode, tab) {
-            const files = img.list(offset, inode);
+        function _list(img, opts, tab) {
+            const files = img.list(opts);
             if (files !== false) {
                 files.forEach((file) => {
                     console.log(`${tab ? tab: ""}${file.allocated ? "" : "|*| "}${file.name}    ${file.type}    ${file.inode}    ${file.type === 'directory' ? file.hasChildren : ""}`);
                     if (file.name !== "$OrphanFiles" && file.type === "directory") {
-                        _list(img, offset, file.inode, `${tab ? tab : ""}     `)
+                        const newOpts = { imgaddr: opts.imgaddr, inode: file.inode };
+                        _list(img, newOpts, `${tab ? tab : ""}     `)
                     }
                 });
             }
@@ -37,16 +38,15 @@ const fs = require('fs');
     }
 
 
-    function recover(imgfile, offset, inode) {
-        const img = new TSK(imgfile);
-        const content = img.get(offset, inode);
+    function recover(img, opts) {
+        const content = img.get(opts);
         fs.writeFile("bufon.jpg", content);
-        
+
         console.log("Recovered file and stored inside bufon.jpg");
     }
 
-    function timeline(img) {
-        const timeline = img.timeline(56, undefined, (list) => 
+    function timeline(img, opts) {
+        const timeline = img.timeline(opts, (list) => 
             console.log(`Received list with ${list.length}`)
         );
         console.log(`There are ${timeline.length} items`);
@@ -58,12 +58,15 @@ const fs = require('fs');
     }
 
     function main() {
+        const imgaddr = 56;
+        const inode = 10758;
+
         console.log("---------------------------------------");
         console.log("-------------- Analyze ----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Perform a simple analysis.");
-        analyze("new-tmp.dd");
+        // analyze("new-tmp.dd");
         const { img, info } = analyze("hdd-001.dd");
         console.log();
         console.log("---------------------------------------");
@@ -76,14 +79,14 @@ const fs = require('fs');
         console.log("---------------- Get ------------------");
         console.log("---------------------------------------");
         console.log();
-        recover("hdd-001.dd", 56, 10758);
+        recover(img, { imgaddr, inode });
         console.log();
         console.log("---------------------------------------");
         console.log("------------- Timeline ----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Timeline:");
-        timeline(img);
+        timeline(img, { imgaddr });
     }
 
     main();

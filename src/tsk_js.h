@@ -37,6 +37,7 @@ private:
     static void Analyze(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void List(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Timeline(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void Search(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Get(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 

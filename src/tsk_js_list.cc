@@ -100,29 +100,19 @@ void TSK::List(const FunctionCallbackInfo<Value>& args)
 {
     TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
     TSK_FS_INFO *fs = NULL;
-    TSK_OFF_T imgaddr = 0;
-    TSK_INUM_T inode = 0;
-    
-    // Walk configurations
-    ADD_FS_ITR itr;
-//    int fls_flags = TSK_FS_FLS_DIR | TSK_FS_FLS_FILE;
-//    int32_t sec_skew = 0;
+    TskOptions *opts;
     int name_flags = TSK_FS_DIR_WALK_FLAG_ALLOC | TSK_FS_DIR_WALK_FLAG_UNALLOC;
+    ADD_FS_ITR itr;
 
     Isolate* isolate = args.GetIsolate();
     TSK *self = TSK::Unwrap<TSK>(args.Holder());
     Local<Value> ret;
 
     // Process input args
-    if (args.Length() > 0 && !args[0]->IsUndefined()) {
-        if (!args[0]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_OFFSET_NOT_NUMBER);
-        }
-        imgaddr = args[0]->NumberValue();
-    }
+    opts = new TskOptions(self->_img, args, 0);
 
     // Check image type
-    fs = tsk_fs_open_img(self->_img, imgaddr * self->_img->sector_size, fstype);
+    fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);
     if (fs == NULL) {
         if (tsk_error_get_errno() == TSK_ERR_FS_UNKTYPE) {
             ret = Boolean::New(isolate, false);
@@ -132,32 +122,17 @@ void TSK::List(const FunctionCallbackInfo<Value>& args)
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
 
-    if (args.Length() > 1 && !args[1]->IsUndefined()) {
-        if (!args[1]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-        }
-        inode = args[1]->NumberValue();
-    } else {
-        inode = fs->root_inum;
+    if (!opts->has_inode()) {
+        opts->set_inode(fs->root_inum);
     }
-
-    if (args.Length() > 1 && !args[1]->IsUndefined()) {
-        if (!args[1]->IsNumber()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-        }
-        inode = args[1]->NumberValue();
-    } else {
-        inode = fs->root_inum;
-    }
-
 
     // Init iterator
     itr.i = 0;
     itr.items = Array::New(isolate);
     itr.isolate = isolate;
-    
+
     // Iterate partitions and add them inside the list
-    if (tsk_fs_dir_walk(fs, inode, 
+    if (tsk_fs_dir_walk(fs, opts->get_inode(), 
         (TSK_FS_DIR_WALK_FLAG_ENUM) name_flags,
         (TSK_FS_DIR_WALK_CB) add_fs, &itr)) {
         tsk_error_print(stderr);
@@ -171,6 +146,7 @@ err:
     if (fs) {
         fs->close(fs);
     }
+    delete opts;
     args.GetReturnValue().Set(ret);
 }
 
