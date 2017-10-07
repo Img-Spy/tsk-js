@@ -23,33 +23,16 @@ using v8::Data;
 using v8::Array;
 
 
-typedef struct {
-    char *buffer;
-    size_t size;
-} ADD_CONTENT;
 
-static TSK_WALK_RET_ENUM
-add_content(TSK_FS_FILE * fs_file, TSK_OFF_T a_off, TSK_DADDR_T addr,
-    char *buf, size_t size, TSK_FS_BLOCK_FLAG_ENUM flags, ADD_CONTENT *ptr)
-{
-    if (size == 0)
-        return TSK_WALK_CONT;
-
-    ptr->size += size;
-    ptr->buffer = (char *) realloc(ptr->buffer, ptr->size);
-    memcpy(ptr->buffer + a_off, buf, size);
-
-    return TSK_WALK_CONT;
-}
-
-void TSK::Get(const FunctionCallbackInfo<Value>& args)
+void
+TSK::Get(const FunctionCallbackInfo<Value>& args)
 {
     TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
-    int fw_flags = 0;
     TSK_FS_INFO *fs = NULL;
     TSK_FS_FILE *fs_file = NULL;
-    TskOptions *opts;
-    ADD_CONTENT content;
+    TskOptions *opts = NULL;
+    TskFile *tsk_file = NULL;
+    BUFFER_INFO buf;
 
     Isolate* isolate = args.GetIsolate();
     TSK *self = TSK::Unwrap<TSK>(args.Holder());
@@ -57,7 +40,7 @@ void TSK::Get(const FunctionCallbackInfo<Value>& args)
 
     opts = new TskOptions(self->_img, args, 0);
     if (opts->has_error()) {
-        
+        goto err;
     }
 
     // Check image type
@@ -74,26 +57,16 @@ void TSK::Get(const FunctionCallbackInfo<Value>& args)
     if (!opts->has_inode()) {
         opts->set_inode(fs->root_inum);
     }
-    
-    // Init iterator
-    content.buffer = NULL;
-    content.size = 0;
-    
+
     fs_file = tsk_fs_file_open_meta(fs, NULL, opts->get_inode());
     if (!fs_file) {
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
 
-    // Iterate partitions and add them inside the list
-    if (tsk_fs_file_walk(fs_file,
-            (TSK_FS_FILE_WALK_FLAG_ENUM) fw_flags,
-            (TSK_FS_FILE_WALK_CB) add_content, &content)) {
-        tsk_error_print(stderr);
-        fs->close(fs);
-        exit(1);
-    }
-
-    ret = Buffer::New(isolate, content.buffer, content.size).ToLocalChecked();
+    tsk_file = new TskFile(fs_file);
+    tsk_file->get_content(isolate, &buf);
+    ret = Buffer::New(isolate, buf.data, buf.size)
+            .ToLocalChecked();
 
 err:
     if (fs) {
@@ -103,6 +76,8 @@ err:
         tsk_fs_file_close(fs_file);
     }
     delete opts;
+    delete tsk_file;
+
     args.GetReturnValue().Set(ret);
 }
 

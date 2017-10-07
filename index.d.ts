@@ -4,9 +4,10 @@ declare module 'tsk-js' {
         constructor(imgfile: string);
 
         analyze(): ImgInfo;
-        list(opts: TskOptions): Array<ImgFile>;
+        list(opts?: TskOptions): Array<ImgFile>;
         get(opts?: TskOptions): Buffer;
-        timeline(opts?: TskOptions, cb?: TimelineCallback): Array<TimelineItem>;
+        timeline(cb?: TimelineCallback, opts?: TskOptions): Array<TimelineItem>;
+        search(needle: string, cb?: SearchCallback, opts?: TskOptions): void;
     }
 
     export interface ImgInfo {
@@ -35,8 +36,10 @@ declare module 'tsk-js' {
         hasChildren?: boolean;
     }
 
-    export type DiskAction = "";
+    export type DiskAction = "access" | "modify" | "creation" | "change";
     export type TimelineCallback = (list: Array<TimelineItem>) => void;
+    export type SearchCallback =
+        (file: ImgFile, context: Buffer, index: number) => void;
 
     export interface TimelineItem {
         path: string;

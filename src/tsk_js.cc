@@ -71,6 +71,7 @@ void TSK::Init(Local<Object> exports)
     NODE_SET_PROTOTYPE_METHOD(tpl, "list", List);
     NODE_SET_PROTOTYPE_METHOD(tpl, "get", Get);
     NODE_SET_PROTOTYPE_METHOD(tpl, "timeline", Timeline);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "search", Search);
 
     constructor.Reset(isolate, tpl->GetFunction());
     exports->Set(String::NewFromUtf8(isolate, "TSK"), tpl->GetFunction());

@@ -105,6 +105,7 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
     Local<Value> it_val;
     Local<Array> items;
     Local<Context> context;
+    Local<Value> args[1];
     MaybeLocal<Value> val;
     Array *actions;
 
@@ -118,7 +119,7 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
     context = Context::New(itr->isolate);
     item = Object::New(itr->isolate);
     items = itr->items;
-    Local<Value> args[] = {items};
+    args[0] = items;
 
     // Name
     plength = strlen(a_path);
@@ -286,7 +287,7 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
 {
     TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
     TSK_FS_INFO *fs = NULL;
-    TskOptions *opts;
+    TskOptions *opts = NULL;
 
     // Walk configurations
     ADD_TL_ITR itr;
@@ -298,8 +299,16 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
     TSK *self = TSK::Unwrap<TSK>(args.Holder());
     Local<Value> ret;
 
+    /* Callback function */
+    if (args.Length() == 0 || !args[0]->IsFunction()) {
+        NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
+    }
+
     // Process input args
-    opts = new TskOptions(self->_img, args, 0);
+    opts = new TskOptions(self->_img, args, 1);
+    if (opts->has_error()) {
+        goto err;
+    }
 
     // Check image type
     fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);
@@ -320,15 +329,7 @@ void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
     itr.i = 0;
     itr.items = Array::New(isolate);
     itr.isolate = isolate;
-    itr.cb = NULL;
-
-    /* Callback function */
-    if (args.Length() > 1 && !args[1]->IsUndefined()) {
-        if (!args[1]->IsFunction()) {
-            NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-        }
-        itr.cb = Function::Cast(*args[1]);
-    }
+    itr.cb = Function::Cast(*args[0]);
 
     // Iterate partitions and add them inside the list
     if (tsk_fs_dir_walk(fs, opts->get_inode(), 

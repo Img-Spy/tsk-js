@@ -42,7 +42,23 @@ CONSTRUCT_ARGS *CONSTRUCT_ARGS_new(v8::Isolate *isolate,
                                    v8::Local<v8::String> input);
 void CONSTRUCT_ARGS_free(CONSTRUCT_ARGS *args);
 
+typedef struct {
+    char *data;
+    size_t size;
+} BUFFER_INFO;
 
+class TskFile : public node::ObjectWrap {
+public:
+    TskFile(TSK_FS_FILE *fs_file);
+    ~TskFile();
+
+    int set_properties(v8::Isolate *isolate, v8::Object *obj);
+    int get_content(v8::Isolate *isolate, BUFFER_INFO *buf);
+    
+private:
+    TSK_FS_FILE *_fs_file;
+    
+};
 
 class TskOptions : public node::ObjectWrap {
 public:

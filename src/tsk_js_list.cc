@@ -33,10 +33,7 @@ static TSK_WALK_RET_ENUM
 add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
 {
     Local<Object> item;
-    Local<Value> key;
-    bool allocated, has_children;
-    const char* type;
-    TSK_FS_DIR *fs_dir;
+    TskFile *tskFile = NULL;
 
     if (TSK_FS_ISDOT(fs_file->name->name)) {
         return TSK_WALK_CONT;
@@ -47,50 +44,9 @@ add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
     itr->items->Set(itr->i++, item);
 
     // Fill the object
-    key = String::NewFromUtf8(itr->isolate, "name");
-    item->Set(key, String::NewFromUtf8(itr->isolate, fs_file->name->name));
-
-    key = String::NewFromUtf8(itr->isolate, "allocated");
-    allocated = fs_file->name->flags == TSK_FS_NAME_FLAG_ALLOC;
-    item->Set(key, Boolean::New(itr->isolate, allocated));
-
-    key = String::NewFromUtf8(itr->isolate, "type");
-    switch (fs_file->name->type) {
-        case TSK_FS_NAME_TYPE_REG:
-            type = "register";
-            break;
-
-        case TSK_FS_NAME_TYPE_DIR:
-            type = "directory";
-            break;
-
-        case TSK_FS_NAME_TYPE_VIRT:
-            type = "virtual";
-            break;
-
-        default:
-            type = "unknown";
-            break;
-    }
-    item->Set(key, String::NewFromUtf8(itr->isolate, type));
-
-    key = String::NewFromUtf8(itr->isolate, "inode");
-    item->Set(key, Number::New(itr->isolate, fs_file->name->meta_addr));
-
-    // get the list of entries in the directory
-    if (fs_file->name->type == TSK_FS_NAME_TYPE_DIR) {
-        if (fs_file->name->meta_addr == TSK_FS_ORPHANDIR_INUM(fs_file->fs_info)) {
-            has_children = true;
-        } else {
-            if ((fs_dir = tsk_fs_dir_open_meta(fs_file->fs_info,
-                    fs_file->name->meta_addr)) == NULL) {
-                return TSK_WALK_ERROR;
-            }
-
-            has_children = fs_dir->names_used > 2;
-        }
-        key = String::NewFromUtf8(itr->isolate, "hasChildren");
-        item->Set(key, Boolean::New(itr->isolate, has_children));
+    tskFile = new TskFile(fs_file);
+    if (!tskFile->set_properties(itr->isolate, *item)) {
+        return TSK_WALK_ERROR;
     }
 
     return TSK_WALK_CONT;
@@ -110,6 +66,9 @@ void TSK::List(const FunctionCallbackInfo<Value>& args)
 
     // Process input args
     opts = new TskOptions(self->_img, args, 0);
+    if (opts->has_error()) {
+        goto err;
+    }
 
     // Check image type
     fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);

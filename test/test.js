@@ -46,20 +46,31 @@ const fs = require('fs');
     }
 
     function timeline(img, opts) {
-        const timeline = img.timeline(opts, (list) => 
+        const timeline = img.timeline((list) => {
             console.log(`Received list with ${list.length}`)
-        );
+        }, opts);
         console.log(`There are ${timeline.length} items`);
 
         timeline.forEach((item) => {
             console.log(`${item.path}    ${item.date}    ${item.actions}`)
         });
+    }
 
+    function search(img, opts) {
+        const search = img.search("Adobe".toLowerCase(), (file, context, i) => {
+            console.log("Found!", file, context.toString(), i);
+        }, opts);
+        console.log(`There are ${search.length} items`);
+
+        search.forEach((item) => {
+            console.log(`${item.path}    ${item.date}    ${item.actions}`)
+        });
     }
 
     function main() {
         const imgaddr = 56;
-        const inode = 10758;
+        const jpgInode = 10758;
+        const folderInode = 9;
 
         console.log("---------------------------------------");
         console.log("-------------- Analyze ----------------");
@@ -79,14 +90,20 @@ const fs = require('fs');
         console.log("---------------- Get ------------------");
         console.log("---------------------------------------");
         console.log();
-        recover(img, { imgaddr, inode });
+        recover(img, { imgaddr, inode: jpgInode });
         console.log();
         console.log("---------------------------------------");
         console.log("------------- Timeline ----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Timeline:");
-        timeline(img, { imgaddr });
+        timeline(img, { imgaddr, inode: folderInode });
+        console.log("---------------------------------------");
+        console.log("-------------- Search -----------------");
+        console.log("---------------------------------------");
+        console.log();
+        console.log("Search:");
+        search(img, { imgaddr }, "");
     }
 
     main();
