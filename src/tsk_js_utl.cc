@@ -26,7 +26,7 @@ CONSTRUCT_ARGS *CONSTRUCT_ARGS_new(Isolate *isolate, Local<String> input)
 
     cargs = new CONSTRUCT_ARGS;
 
-    String::Utf8Value string(input->ToString());
+    String::Utf8Value string(input);
     cargs->imgfile = (char *)malloc(string.length() + 1);
     memcpy(cargs->imgfile, *string, string.length() + 1);
 

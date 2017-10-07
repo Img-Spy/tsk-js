@@ -44,7 +44,6 @@ namespace tsk_utl {
 #define _E_M_LS_INODE_NOT_NUMBER \
     "List inode must be a number."
     
-    
 }
 
 #endif
