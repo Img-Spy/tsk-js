@@ -63,18 +63,32 @@ TskFile::get_content(v8::Isolate *isolate, BUFFER_INFO *buf)
 }
 
 int
-TskFile::set_properties(Isolate *isolate, Object *obj)
+TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
 {
     Local<Value> key;
     bool allocated, has_children;
     const char* type;
+    char *path = NULL;
     TSK_FS_DIR *fs_dir;
+    int plength, nlength;
     TSK_FS_FILE* fs_file;
+    int ret = 0;
 
+    // Name
     fs_file = this->_fs_file;
     key = String::NewFromUtf8(isolate, "name");
     obj->Set(key, String::NewFromUtf8(isolate, fs_file->name->name));
 
+    // Path    
+    plength = strlen(a_path);
+    nlength = strlen(fs_file->name->name);
+    path = (char *) malloc(plength + nlength + 1);
+    memcpy(path, a_path, plength);
+    memcpy(path + plength, fs_file->name->name, nlength + 1);
+    key = String::NewFromUtf8(isolate, "path");
+    obj->Set(key, String::NewFromUtf8(isolate, path));
+
+    // Allocated
     key = String::NewFromUtf8(isolate, "allocated");
     allocated = fs_file->name->flags == TSK_FS_NAME_FLAG_ALLOC;
     obj->Set(key, Boolean::New(isolate, allocated));
@@ -109,7 +123,7 @@ TskFile::set_properties(Isolate *isolate, Object *obj)
         } else {
             if ((fs_dir = tsk_fs_dir_open_meta(fs_file->fs_info,
                     fs_file->name->meta_addr)) == NULL) {
-                return 0;
+                goto err;
             }
 
             has_children = fs_dir->names_used > 2;
@@ -117,8 +131,11 @@ TskFile::set_properties(Isolate *isolate, Object *obj)
         key = String::NewFromUtf8(isolate, "hasChildren");
         obj->Set(key, Boolean::New(isolate, has_children));
     }
-    
-    return 1;
+
+    ret = 1;
+err:
+    free(path);
+    return ret;
 }
 
 }

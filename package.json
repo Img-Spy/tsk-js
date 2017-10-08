@@ -1,6 +1,6 @@
 {
   "name": "tsk-js",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A module that uses The Sleuth Kit to make some disk analysis on Javascript",
   "main": "build/Release/tsk-js.node",
   "author": "frg",

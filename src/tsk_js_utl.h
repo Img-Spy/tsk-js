@@ -52,7 +52,8 @@ public:
     TskFile(TSK_FS_FILE *fs_file);
     ~TskFile();
 
-    int set_properties(v8::Isolate *isolate, v8::Object *obj);
+    int set_properties(v8::Isolate *isolate, v8::Object *obj,
+                       const char* a_path);
     int get_content(v8::Isolate *isolate, BUFFER_INFO *buf);
     
 private:

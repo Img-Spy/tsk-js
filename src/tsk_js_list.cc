@@ -45,7 +45,7 @@ add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
 
     // Fill the object
     tskFile = new TskFile(fs_file);
-    if (!tskFile->set_properties(itr->isolate, *item)) {
+    if (!tskFile->set_properties(itr->isolate, *item, a_path)) {
         return TSK_WALK_ERROR;
     }
 

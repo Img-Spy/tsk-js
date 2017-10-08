@@ -29,6 +29,7 @@ declare module 'tsk-js' {
     }
 
     export interface ImgFile {
+        path: string;
         name: string;
         allocated: boolean;
         type: "directory" | "virtual" | "register" | "unknown";

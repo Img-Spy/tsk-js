@@ -115,7 +115,7 @@ srch_fs(TSK_FS_FILE * fs_file, const char *a_path, SRCH_FS_ITR *itr)
 
             if (found) {
                 item = Object::New(itr->isolate);
-                if (!tsk_file->set_properties(itr->isolate, *item)) {
+                if (!tsk_file->set_properties(itr->isolate, *item, a_path)) {
                     return TSK_WALK_ERROR;
                 }
                 args[0] = item;
