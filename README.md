@@ -15,7 +15,7 @@ TSK must be installed before downloading this package.
 
 # Usage
 
-```{r, engine='javascript'}
+```javascript
 const { TSK } = require("tsk-js");
 analyzeImage("hdd-001.dd")
 
