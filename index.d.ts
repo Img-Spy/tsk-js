@@ -1,4 +1,3 @@
-
 declare module 'tsk-js' {
     export class TSK {
         constructor(imgfile: string);

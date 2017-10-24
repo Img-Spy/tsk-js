@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
+      <df name=".vscode">
+      </df>
       <df name="bin">
       </df>
       <df name="build">
         <df name="Debug">
+          <df name=".deps">
+            <df name="Debug">
+              <df name="obj.target">
+                <df name="tsk-js">
+                  <df name="src">
+                  </df>
+                </df>
+              </df>
+            </df>
+          </df>
           <df name="obj.target">
             <df name="tsk-js">
               <df name="src">
@@ -13,6 +25,8 @@
             </df>
           </df>
         </df>
+      </df>
+      <df name="lib">
       </df>
       <df name="node_modules">
         <df name="@types">
@@ -35,20 +49,16 @@
         <in>tsk_js.h</in>
         <in>tsk_js_analyze.cc</in>
         <in>tsk_js_err.h</in>
+        <in>tsk_js_file.cc</in>
         <in>tsk_js_get.cc</in>
         <in>tsk_js_list.cc</in>
+        <in>tsk_js_search.cc</in>
         <in>tsk_js_timeline.cc</in>
         <in>tsk_js_utl.cc</in>
         <in>tsk_js_utl.h</in>
       </df>
       <df name="test">
         <df name="Alice">
-          <df name="private">
-          </df>
-        </df>
-        <df name="Bob">
-          <df name="private">
-          </df>
         </df>
         <df name="Signer">
           <df name="private">
@@ -99,7 +109,7 @@
           <runcommandpicklistitem>/opt/node-v6.11.3-linux-x64/bin/node test.js</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>/opt/node-v6.11.3-linux-x64/bin/node test.js</runcommand>
-        <rundir>/home/frg/Git/tsk-js/./test</rundir>
+        <rundir>/home/frg/Git/tsk-js/test</rundir>
         <buildfirst>false</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>

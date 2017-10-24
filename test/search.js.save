@@ -1,0 +1,52 @@
+#!/opt/node-v4.2.0-linux-x64/bin/node
+const TSK = require('../bin/tsk-js').TSK;
+const fs = require('fs');
+
+!function () {
+
+    function timeline(img, opts) {
+        const timeline = img.timeline(opts, (list) => 
+            console.log(`Received list with ${list.length}`)
+        );
+        console.log(`There are ${timeline.length} items`);
+
+        timeline.forEach((item) => {
+            console.log(`${item.path}    ${item.date}    ${item.actions}`)
+        });
+
+    }
+
+    function main() {
+        const imgaddr = 56;
+        const inode = 10758;
+
+        console.log("---------------------------------------");
+        console.log("-------------- Analyze ----------------");
+        console.log("---------------------------------------");
+        console.log();
+        console.log("Perform a simple analysis.");
+        // analyze("new-tmp.dd");
+        const { img, info } = analyze("hdd-001.dd");
+        console.log();
+        console.log("---------------------------------------");
+        console.log("---------------- List -----------------");
+        console.log("---------------------------------------");
+        console.log();
+        list(img, info);
+        console.log();
+        console.log("---------------------------------------");
+        console.log("---------------- Get ------------------");
+        console.log("---------------------------------------");
+        console.log();
+        recover(img, { imgaddr, inode });
+        console.log();
+        console.log("---------------------------------------");
+        console.log("------------- Timeline ----------------");
+        console.log("---------------------------------------");
+        console.log();
+        console.log("Timeline:");
+        timeline(img, { imgaddr });
+    }
+
+    main();
+}();

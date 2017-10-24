@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="95">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <df name="src">
@@ -15,8 +15,10 @@
         <in>module.cc</in>
         <in>tsk_js.cc</in>
         <in>tsk_js_analyze.cc</in>
+        <in>tsk_js_file.cc</in>
         <in>tsk_js_get.cc</in>
         <in>tsk_js_list.cc</in>
+        <in>tsk_js_search.cc</in>
         <in>tsk_js_timeline.cc</in>
         <in>tsk_js_utl.cc</in>
       </df>
@@ -43,6 +45,7 @@
       <flagsDictionary>
         <element flagsID="0"
                  commonFlags="-fPIC -m64 -fno-rtti -fno-exceptions -std=gnu++0x"/>
+        <element flagsID="1" commonFlags="-std=c++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -63,6 +66,10 @@
             </preprocessorList>
           </ccTool>
         </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
       </makefileType>
       <item path="src/module.cc" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
@@ -93,13 +100,15 @@
       </item>
       <item path="src/tsk/fls_lib.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/tsk/fs_dir.c" ex="false" tool="0" flavor2="0">
+      <item path="src/tsk/fs_dir.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/tsk/fs_name.c" ex="false" tool="0" flavor2="0">
+      <item path="src/tsk/fs_name.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="src/tsk/icat.cpp" ex="false" tool="1" flavor2="0">
+      <item path="src/tsk/icat.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
       </item>
-      <item path="src/tsk/icat_lib.c" ex="false" tool="0" flavor2="0">
+      <item path="src/tsk/icat_lib.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="src/tsk/mmls.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -144,6 +153,22 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="src/tsk_js_file.cc" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../.node-gyp/6.11.3/include/node</pElem>
+            <pElem>../../.node-gyp/6.11.3/src</pElem>
+            <pElem>../../.node-gyp/6.11.3/deps/uv/include</pElem>
+            <pElem>../../.node-gyp/6.11.3/deps/v8/include</pElem>
+            <pElem>build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>USING_UV_SHARED=1</Elem>
+            <Elem>USING_V8_SHARED=1</Elem>
+            <Elem>V8_DEPRECATION_WARNINGS=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <item path="src/tsk_js_get.cc" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
@@ -161,6 +186,22 @@
         </ccTool>
       </item>
       <item path="src/tsk_js_list.cc" ex="false" tool="1" flavor2="8">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../.node-gyp/6.11.3/include/node</pElem>
+            <pElem>../../.node-gyp/6.11.3/src</pElem>
+            <pElem>../../.node-gyp/6.11.3/deps/uv/include</pElem>
+            <pElem>../../.node-gyp/6.11.3/deps/v8/include</pElem>
+            <pElem>build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>USING_UV_SHARED=1</Elem>
+            <Elem>USING_V8_SHARED=1</Elem>
+            <Elem>V8_DEPRECATION_WARNINGS=1</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="src/tsk_js_search.cc" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
           <incDir>
             <pElem>../../.node-gyp/6.11.3/include/node</pElem>
