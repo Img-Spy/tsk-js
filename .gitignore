@@ -1,4 +1,7 @@
 /build
 /Makefile
 /bin
+/node_modules
+/_book
+
 *.tmp
