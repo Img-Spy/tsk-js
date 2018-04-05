@@ -2,6 +2,7 @@
 /Makefile
 /bin
 /node_modules
-/_book
+/docs/_book
+/docs/generated
 
 *.tmp

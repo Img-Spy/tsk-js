@@ -2,20 +2,21 @@ TSK-js
 =======================
 A module that uses The Sleuth Kit to make some disk analysis on Javascript
 
+# Requirements
+
+[The Sleuth Kit](https://www.sleuthkit.org/sleuthkit/download.php) must be installed before downloading this package.
+
 # Instalation
 
 You can install it just using the command:
 
-```{r, engine='bash'}
-npm install tsk-js --save
+```bash
+$ npm install tsk-js --save
 ```
-# Prerequisites
-
-TSK must be installed before downloading this package.
 
 # Usage
 
-```{r, engine='javascript'}
+```javascript
 const { TSK } = require("tsk-js");
 analyzeImage("hdd-001.dd")
 
