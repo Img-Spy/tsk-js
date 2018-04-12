@@ -1,0 +1,20 @@
+## Index
+
+{{#if groups}}
+{{#each groups}}
+{{#unless isConstructors}}
+{{#ifGroupContainesVisibleItems this }}
+### {{title}}
+
+{{#each children}}
+{{#ifDisplayIndexItem this }}
+* [{{{name}}}]({{relativeURL url}})
+{{/ifDisplayIndexItem}}
+{{/each}}
+{{getNewLine}}
+{{/ifGroupContainesVisibleItems}}
+{{/unless}}
+{{/each}}
+{{/if}}
+
+---

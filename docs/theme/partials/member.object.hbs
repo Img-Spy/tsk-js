@@ -1,0 +1,13 @@
+{{{getAnchor anchor}}}
+
+## {{kindString}}: {{name}}
+
+{{> comment}}
+
+{{#each groups}}
+{{#each children}}
+{{#unless hasOwnDocument}}
+{{> member}}
+{{/unless}}
+{{/each}}
+{{/each}}

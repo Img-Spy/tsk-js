@@ -1,0 +1,10 @@
+{{#if parameters}}
+**Parameters:**
+
+{{getParametersTableHeaders parameters}}
+{{#each parameters}}
+| {{ name }} | {{#with type}}{{>type}}{{/with}} {{#if defaultValue}} | {{defaultValue}} | {{/if}} {{#unless defaultValue}} | {{/unless}} {{#getMarkdownFromHtml}}{{#markdown}}{{{ getStrippedComment comment }}}{{/markdown}}{{/getMarkdownFromHtml}} |
+{{/each}}
+{{getNewLine}}{{getNewLine}}
+{{/if}}
+
