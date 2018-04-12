@@ -1,0 +1,3 @@
+[submodule "lib/sleuthkit"]
+	path = lib/sleuthkit
+	url = https://github.com/sleuthkit/sleuthkit
