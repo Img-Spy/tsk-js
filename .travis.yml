@@ -7,6 +7,7 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
+    - sleuthkit
     - g++-4.8
     - g++-4.8-multilib
     - gcc-multilib
@@ -77,6 +78,9 @@ before_install:
 - if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=$BINARY_BUILDER; fi;
 - echo "Publishing native platform Binary Package? ->" $PUBLISH_BINARY
 
+# Test
+- ls /usr/local/lib/libtsk.a
+
 # setup virtual serialports
 # - >
   # socat -d -d -unlink-close pty,raw,nonblock,echo=0,link=ttyV0 pty,raw,nonblock,echo=0,link=ttyV1 &
@@ -89,17 +93,7 @@ install:
 
 script:
   # linting no longer works on node 4
-- >
-  if [[ $TRAVIS_NODE_VERSION != "4" ]]; then
-    npm run lint
-  fi;
-- node ./
 - npm test
 
-# if publishing, do it
-- >
-  if [[ $PUBLISH_BINARY == true ]]; then
-    npm run prebuild-upload;
-  fi;
 after_success:
 - bash <(curl -s https://codecov.io/bash)
