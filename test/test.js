@@ -49,6 +49,7 @@ const fs = require('fs');
         const timeline = img.timeline((list) => {
             console.log(`Received list with ${list.length}`)
         }, opts);
+        console.log(`There are ${timeline} items`);
         console.log(`There are ${timeline.length} items`);
 
         timeline.forEach((item) => {
@@ -68,17 +69,16 @@ const fs = require('fs');
     }
 
     function main() {
-        const imgaddr = 56;
-        const jpgInode = 10758;
-        const folderInode = 9;
+        const imgaddr = 2048;
+        const jpgInode = 2074902;
+        const folderInode = 6;
 
         console.log("---------------------------------------");
         console.log("-------------- Analyze ----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Perform a simple analysis.");
-        // analyze("new-tmp.dd");
-        const { img, info } = analyze("hdd-001.dd");
+        const { img, info } = analyze("hdd-test.dd");
         console.log();
         console.log("---------------------------------------");
         console.log("---------------- List -----------------");

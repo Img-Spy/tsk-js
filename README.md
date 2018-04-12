@@ -1,5 +1,7 @@
 TSK-js
 =======================
+[![Build Status](https://travis-ci.org/Img-Spy/tsk-js.svg?branch=master)](https://travis-ci.org/Img-Spy/tsk-js)
+
 A module that uses The Sleuth Kit to make some disk analysis on Javascript
 
 ## Installation

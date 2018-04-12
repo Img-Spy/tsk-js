@@ -5,6 +5,7 @@
   "main": "build/Release/tsk-js.node",
   "author": "frg",
   "scripts": {
+    "test": "cd test; node test.js",
     "docs:generate": "rm -rf docs/generated/; node_modules/.bin/typedoc --options typedoc.js index.d.ts",
     "docs:serve": "gitbook serve ./docs"
   },

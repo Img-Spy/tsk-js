@@ -1,8 +1,19 @@
+# Compiled files
 /build
 /Makefile
 /bin
+
+# Node packages
 /node_modules
+
+# Documentation
 /docs/_book
 /docs/generated
 
+# Test
+/test/bufon.jpg
+
+# Temporal files
 *.tmp
+
+
