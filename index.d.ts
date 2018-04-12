@@ -1,5 +1,9 @@
 declare module 'tsk-js' {
     export class TSK {
+        /**
+         * Constructor
+         * @param imgfile Path to an image file
+         */
         constructor(imgfile: string);
 
         analyze(): ImgInfo;
