@@ -6,15 +6,6 @@ A module that uses The Sleuth Kit to make some disk analysis on Javascript
 
 ## Installation
 
-For a complete guide on the installation process go to
-[Installation](./static/installation.md) chapter
-
-### Requirements
-
-[The Sleuth Kit](https://www.sleuthkit.org/sleuthkit/download.php) must be installed before downloading this package.
-
-### Module
-
 You can install it just using the command:
 
 ```bash
@@ -52,10 +43,10 @@ function analyzePartition(img, imgaddr) {
     // Search file
     searchRecursive("carta.txt", img, imgaddr, undefined, (file) => {
         const { inode } = file;
-	    const buff = img.get({ imgaddr, inode });
+        const buff = img.get({ imgaddr, inode });
 
         console.log("File found!");
-	    console.log("Print it's content:");
+        console.log("Print it's content:");
         console.log("---------------------------");
         console.log(buff.toString());
         console.log("---------------------------");
@@ -69,7 +60,7 @@ function analyzePartition(img, imgaddr) {
 function analyzeDisk(img, res) {
     res.partitions
         .filter((p) => p.hasFs)
-	    .forEach((p) => analyzePartition(img, p.start));
+        .forEach((p) => analyzePartition(img, p.start));
 }
 
 function analyzeImage(imgfile) {

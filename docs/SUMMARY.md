@@ -1,6 +1,5 @@
 # Table of Contents
 
-* [Installation](./static/installation.md)
 * [User guide](./static/guide.md)
   * [Image analysis](./static/guide/image-analysis.md)
   * [File extraction](./static/guide/file-extraction.md)
