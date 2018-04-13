@@ -21,9 +21,9 @@ TEST=test
 all: $(BUILD)/Makefile
 	@echo "\n-- BUILD MODULE --"
 	$(NODE_MAKE) build --$(RELEASE.CONFIG)
-	@rm -rf $(BIN);
-	@mkdir -p $(BIN)
-	@cd $(BIN)  && ln -s ../$(BUILD)/$(RELEASE)/$(MODULE).node .
+#	@rm -rf $(BIN);
+#	@mkdir -p $(BIN)
+#	@cd $(BIN)  && ln -s ../$(BUILD)/$(RELEASE)/$(MODULE).node .
 
 clean: tclean
 	rm -rf $(BUILD)

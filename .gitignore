@@ -1,7 +1,6 @@
 # Compiled files
 /build
 /Makefile
-/bin
 
 # Node packages
 /node_modules

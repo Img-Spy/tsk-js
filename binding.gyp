@@ -2,7 +2,11 @@
     "targets": [
         {
             "target_name": "tsk-js",
-            "libraries": ["-Wl,-Bsymbolic,/usr/local/lib/libtsk.a"],
+            # Path relative to source files (./src)
+            "libraries": ["-Wl,-Bsymbolic,../vendor/sleuthkit/tsk/.libs/libtsk.a"],
+            "include_dirs": [
+                "./vendor/sleuthkit/"
+            ],
             "sources": [
                 "src/module.cc",
                 "src/tsk_js.cc",

@@ -1,5 +1,7 @@
 #!/opt/node-v4.2.0-linux-x64/bin/node
-const TSK = require('../bin/tsk-js').TSK;
+const package = '../build/Release/tsk-js.node';
+
+const TSK = require(package).TSK;
 const fs = require('fs');
 
 !function () {
@@ -78,7 +80,9 @@ const fs = require('fs');
         console.log("---------------------------------------");
         console.log();
         console.log("Perform a simple analysis.");
-        const { img, info } = analyze("hdd-test.dd");
+        const analysis = analyze("hdd-test.dd"),
+                img = analysis.img,
+                info = analysis.info;
         console.log();
         console.log("---------------------------------------");
         console.log("---------------- List -----------------");
@@ -90,20 +94,20 @@ const fs = require('fs');
         console.log("---------------- Get ------------------");
         console.log("---------------------------------------");
         console.log();
-        recover(img, { imgaddr, inode: jpgInode });
+        recover(img, { imgaddr: imgaddr, inode: jpgInode });
         console.log();
         console.log("---------------------------------------");
         console.log("------------- Timeline ----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Timeline:");
-        timeline(img, { imgaddr, inode: folderInode });
+        timeline(img, { imgaddr: imgaddr, inode: folderInode });
         console.log("---------------------------------------");
         console.log("-------------- Search -----------------");
         console.log("---------------------------------------");
         console.log();
         console.log("Search:");
-        search(img, { imgaddr }, "");
+        search(img, { imgaddr: imgaddr }, "");
     }
 
     main();
