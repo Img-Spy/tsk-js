@@ -1,22 +1,12 @@
+#!/usr/bin/env python
+
 import os
 import subprocess
 import sys
+from lib import execute, file_exists
 
 
 slethkit_path="./vendor/sleuthkit"
-
-
-def execute(argv, env=os.environ, cwd=None):
-    try:
-        output = subprocess.check_output(argv, stderr=subprocess.STDOUT, env=env, cwd=cwd)
-        return output
-    except subprocess.CalledProcessError as e:
-        print(e.output)
-        raise e
-
-
-def file_exists(path):
-    return os.path.exists(path)
 
 
 def main():
@@ -30,7 +20,20 @@ def main():
 
     if not file_exists(slethkit_path + "/Makefile"):
         print("  - Configure")
-        execute("./configure", cwd=slethkit_path)
+        config_cmd = ["./configure"]
+        env = os.environ
+
+        config = os.getenv("TSK_JS_CONFIG_ARGS")
+        if config is not None:
+            config_cmd += config.split(',')
+
+        env_custom = os.getenv("TSK_JS_CONFIG_ENV")
+        if env_custom is not None:
+            for env_pair in env_custom.split(','):
+                key, value = env_pair.split('=')
+                env[key] = value
+
+        execute(config_cmd, cwd=slethkit_path, env=env)
 
     print("Build sleutkit library")
     execute("make", cwd=slethkit_path)

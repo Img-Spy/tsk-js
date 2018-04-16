@@ -20,13 +20,13 @@ env:
   - secure: "L+AGMJc5NAsuym+xzB4FWj0c2rCobosixkoxLBhDBVkLiYsMtfS9y1w8Xz0pbWKJnJAH9tfwHluu5aX2qYk2HbreSyNzy8hbPW+9RbSyAQexeiZG4mLuDEz0xvlpCCQBsS1OfMypQk0/JvL4oA9B/xasrpkeVuPI7dwAz2WcFms="
   matrix:
   - TRAVIS_NODE_VERSION="4"
-  #- TRAVIS_NODE_VERSION="4" ARCH="x86"
+  - TRAVIS_NODE_VERSION="4" ARCH="x86"
   - TRAVIS_NODE_VERSION="6"
-  #- TRAVIS_NODE_VERSION="6" ARCH="x86"
+  - TRAVIS_NODE_VERSION="6" ARCH="x86"
   - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8"
-  #- BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8" ARCH="x86"
+  - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="8" ARCH="x86"
   - TRAVIS_NODE_VERSION="9"
-  #- TRAVIS_NODE_VERSION="9" ARCH="x86"
+  - TRAVIS_NODE_VERSION="9" ARCH="x86"
 matrix:
   exclude:
   - os: osx
@@ -48,7 +48,10 @@ before_install:
     wget $BASE_URL/$X86_FILE.tar.gz;
     tar -xf $X86_FILE.tar.gz;
     nvm deactivate;
-    export PATH=$X86_FILE/bin:$PATH;
+    echo $PWD;
+    export PATH=$PWD/$X86_FILE/bin:$PATH;
+    export TSK_JS_CONFIG_ARGS="--host=i386-redhat-linux,--build=i386-redhat-linux";
+    export TSK_JS_CONFIG_ENV="CFLAGS=-m32,CXXFLAGS=-m32,LDFLAGS=-m32,LTCC=gcc -m32";
   else
     nvm install $TRAVIS_NODE_VERSION
   fi;
@@ -87,9 +90,7 @@ install:
 # ensure source install works
 - npm install --build-from-source
 
-script:
-  # linting no longer works on node 4
-- npm test
+script: './script/test;'
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)

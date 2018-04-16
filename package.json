@@ -5,8 +5,8 @@
   "main": "build/Release/tsk-js.node",
   "author": "frg",
   "scripts": {
-    "test": "cd test; node test.js",
-    "preinstall": "python ./script/preinstall.py",
+    "test": "./script/test",
+    "preinstall": "./script/preinstall",
     "install": "node-gyp rebuild",
     "clean": "",
     "docs:generate": "rm -rf docs/generated/; node_modules/.bin/typedoc --options typedoc.js index.d.ts",

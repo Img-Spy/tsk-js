@@ -14,5 +14,5 @@
 
 # Temporal files
 *.tmp
-
-
+*.pyc
+/npm-debug.log
