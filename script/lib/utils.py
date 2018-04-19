@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import shutil
 
 
 def execute(argv, env=os.environ, cwd=None):
@@ -11,6 +12,8 @@ def execute(argv, env=os.environ, cwd=None):
         print(e.output)
         raise e
 
-
 def file_exists(path):
     return os.path.exists(path)
+
+def rmdir(path):
+    shutil.rmtree(path, ignore_errors=True)

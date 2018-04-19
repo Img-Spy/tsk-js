@@ -9,7 +9,7 @@ module.exports = {
   theme: 'docs/theme',
   readme: 'none',
   mdFlavour: 'gitbook',
+  mdHideSources: true,
   toc: 'tsk-js',
   out: 'docs/generated'
 }
-

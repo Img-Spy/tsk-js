@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+from lib import execute, rmdir
+
+config = {
+    "generated_path": "./docs/generated",
+    "options": "typedoc.js",
+    "source": "index.d.ts"
+}
+
+def main():
+    print("Remove previous documentation.")
+    rmdir(config["generated_path"])
+    print("Build documentation")
+    execute([
+        "./node_modules/.bin/typedoc",
+        "--options", config["options"],
+        config["source"]
+    ])
+
+if __name__ == '__main__':
+    sys.exit(main())

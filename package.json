@@ -9,8 +9,8 @@
     "preinstall": "./script/preinstall",
     "install": "node-gyp rebuild",
     "clean": "",
-    "docs:generate": "rm -rf docs/generated/; node_modules/.bin/typedoc --options typedoc.js index.d.ts",
-    "docs:serve": "gitbook serve ./docs"
+    "doc:build": "./script/build-doc",
+    "doc:serve": "gitbook serve ./docs"
   },
   "license": "ISC",
   "devDependencies": {
