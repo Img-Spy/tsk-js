@@ -9,8 +9,10 @@
     "preinstall": "./script/preinstall",
     "install": "node-gyp rebuild",
     "clean": "",
+    "build": "node-gyp build",
+    "build:debug": "node-gyp build --debug",
     "doc:build": "./script/build-doc",
-    "doc:serve": "gitbook serve ./docs"
+    "doc:serve": "gitbook serve"
   },
   "license": "ISC",
   "devDependencies": {

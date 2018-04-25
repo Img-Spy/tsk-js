@@ -2,7 +2,7 @@ var pkg = require('./package.json');
 
 module.exports = {
     // Documentation for GitBook is stored under "docs"
-    root: '.',
+    root: './docs',
     title: 'The Sleuth Kit JavaScript',
 
     // Enforce use of GitBook v3
@@ -15,7 +15,7 @@ module.exports = {
         '-fontsettings',
         'sitemap',
 
-        'custom@custom'
+        'custom@docs/custom'
     ],
 
     variables: {
