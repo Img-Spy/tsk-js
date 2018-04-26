@@ -10,9 +10,6 @@ slethkit_path="./vendor/sleuthkit"
 
 
 def main():
-    print("Update submodule")
-    execute(["git", "submodule", "update"])
-
     print("Prepare sleutkit library")
     if not file_exists(slethkit_path + "/configure"):
         print("  - Bootstrap")
