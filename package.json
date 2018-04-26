@@ -1,7 +1,7 @@
 {
   "name": "tsk-js",
   "version": "0.3.2",
-  "description": "A module that uses The Sleuth Kit to make some disk analysis on Javascript",
+  "description": "A module that allows you to investigate disk images using Javascript by using The Sleuth Kit as library.",
   "main": "build/Release/tsk-js.node",
   "author": "frg",
   "scripts": {
@@ -12,7 +12,7 @@
     "build": "node-gyp build",
     "build:debug": "node-gyp build --debug",
     "doc:build": "./script/build-doc",
-    "doc:serve": "gitbook serve"
+    "doc:serve": "gitbook serve ./docs"
   },
   "license": "ISC",
   "devDependencies": {

@@ -29,6 +29,8 @@ env:
   - TRAVIS_NODE_VERSION="9" ARCH="x86"
 matrix:
   exclude:
+  - os: linux
+    env: TRAVIS_NODE_VERSION="4"
   - os: osx
     env: TRAVIS_NODE_VERSION="4" ARCH="x86"
   - os: osx
