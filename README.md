@@ -1,8 +1,20 @@
 TSK-js
 =======================
 [![Build Status](https://travis-ci.org/Img-Spy/tsk-js.svg?branch=master)](https://travis-ci.org/Img-Spy/tsk-js)
+[![NPM Downloads](https://img.shields.io/npm/dt/tsk-js.svg)](https://www.npmjs.com/package/tsk-js)
+[![License](https://img.shields.io/github/license/Img-Spy/tsk-js.svg)](./LICENSE)
 
-A module that uses The Sleuth Kit to make some disk analysis on Javascript
+A module that allows you to investigate disk images using Javascript by using
+[The Sleuth Kit](https://www.sleuthkit.org/sleuthkit/)
+as library.
+
+Its main functionalities are image analysis (mmls), list allocated and deleted
+files in a directory (fls), extract files (icat), generate a timeline (mactime)
+and find strings inside the disk (grep).
+
+Some of those functionalities are based on
+[tools](https://wiki.sleuthkit.org/index.php?title=TSK_Tool_Overview)
+offered by The Sleuth Kit.
 
 ## Installation
 
