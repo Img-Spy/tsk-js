@@ -2,7 +2,7 @@ TSK-js
 =======================
 [![Build Status](https://travis-ci.org/Img-Spy/tsk-js.svg?branch=master)](https://travis-ci.org/Img-Spy/tsk-js)
 [![NPM Downloads](https://img.shields.io/npm/dt/tsk-js.svg)](https://www.npmjs.com/package/tsk-js)
-[![License](https://img.shields.io/github/license/Img-Spy/tsk-js.svg)](./LICENSE)
+[![License](https://img.shields.io/github/license/Img-Spy/tsk-js.svg)](https://github.com/Img-Spy/tsk-js/blob/master/LICENSE)
 
 A module that allows you to investigate disk images using Javascript by using
 [The Sleuth Kit](https://www.sleuthkit.org/sleuthkit/)
