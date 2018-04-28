@@ -24,6 +24,7 @@
   ],
   "devDependencies": {
     "@types/node": "^8.0.31",
+    "gitbook-cli": "^2.3.2",
     "ncp": "^2.0.0",
     "rxjs": "^6.0.0",
     "rxjs-compat": "^6.0.0",
