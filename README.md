@@ -9,8 +9,8 @@ A module that allows you to investigate disk images using Javascript by using
 as library.
 
 Its main functionalities are image analysis (mmls), list allocated and deleted
-files in a directory (fls), extract files (icat), generate a timeline (mactime)
-and find strings inside the disk (grep).
+files inside a directory or file system (fls), extract files (icat), generate
+timelines (mactime) and look up strings inside the image (grep).
 
 Some of those functionalities are based on
 [tools](https://wiki.sleuthkit.org/index.php?title=TSK_Tool_Overview)

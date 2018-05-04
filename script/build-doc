@@ -23,8 +23,7 @@ def main():
     ])
     print("Build documentation")
     execute([
-        "./node_modules/.bin/gitbook",
-        "build", config["doc_path"]
+        "./node_modules/.bin/gitbook", "build"
     ])
 
 if __name__ == '__main__':

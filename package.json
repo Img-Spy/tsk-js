@@ -13,7 +13,7 @@
     "build:debug": "node-gyp build --debug",
     "doc:build": "./script/build-doc",
     "doc:publish": "./script/publish-doc",
-    "doc:serve": "gitbook serve ./docs",
+    "doc:serve": "gitbook serve",
     "npm:publish": "node ./script/publish-npm.js"
   },
   "license": "MIT",

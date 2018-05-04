@@ -7,10 +7,10 @@
 /Makefile
 
 # Node packages
-/node_modules
+node_modules
 
 # Documentation
-/docs/_book
+/_book
 /docs/generated
 
 # Test
@@ -19,4 +19,4 @@
 # Temporal files
 *.tmp
 *.pyc
-/npm-debug.log
+npm-debug.log
