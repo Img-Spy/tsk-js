@@ -36,10 +36,9 @@ export function listFat() {
     const expected = getResource("fs-fat.txt");
 
     const img = new TSK(image);
-    const fsroot = printFsTree(img, { imgaddr: imgaddr.fat });
-    const result = new Buffer(fsroot);
+    const result = printFsTree(img, { imgaddr: imgaddr.fat });
 
-    expect(result.toString()).deep.eq(expected.toString());
+    expect(result).deep.eq(expected.toString());
 }
 
 
@@ -47,8 +46,7 @@ export function listNtfs() {
     const expected = getResource("fs-ntfs.txt");
 
     const img = new TSK(image);
-    const fsroot = printFsTree(img, { imgaddr: imgaddr.ntfs });
-    const result = new Buffer(fsroot);
+    const result = printFsTree(img, { imgaddr: imgaddr.ntfs });
 
-    expect(result.toString()).deep.eq(expected.toString());
+    expect(result).deep.eq(expected.toString());
 }
