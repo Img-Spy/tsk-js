@@ -13,8 +13,8 @@ const TSK: TskJs.TskConstructor = (() => {
 })();
 
 const image = path.join(__dirname, "hdd-test.dd");
-const imgaddr = { fat: 2048, ntfs: 2048 };
-const fileInode = 2074902;
+const imgaddr = { fat: 2048, ntfs: 53248 };
+const fileInode = 38602;
 
 const config = {
     DEBUG, TSK, image, imgaddr, fileInode,

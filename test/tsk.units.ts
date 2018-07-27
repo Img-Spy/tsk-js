@@ -27,9 +27,10 @@ export function get() {
     const img = new TSK(image);
     const imgData = img.get({ imgaddr: imgaddr.fat, inode: fileInode });
 
-    if(!testData.equals(imgData)) {
-        throw new Error("The file has not the expected content")
-    }
+    expect(imgData.toString()).to.deep.eq(testData.toString());
+    // if(!testData.equals(imgData)) {
+    //     throw new Error("The file has not the expected content")
+    // }
 }
 
 

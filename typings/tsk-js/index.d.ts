@@ -41,6 +41,7 @@ declare namespace TskJs {
         name: string;
         allocated: boolean;
         type: "directory" | "virtual" | "register" | "unknown";
+        metaType: "directory" | "virtual" | "register" | "unknown";
         inode: number;
         hasChildren?: boolean;
     }

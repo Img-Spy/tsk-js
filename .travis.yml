@@ -93,7 +93,7 @@ install:
 # ensure source install works
 - npm install --build-from-source
 
-script: './script/test;'
+script: 'npm test'
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)

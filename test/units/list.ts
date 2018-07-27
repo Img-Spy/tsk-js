@@ -4,42 +4,51 @@ import { TSK,
 import { expect } from "chai";
 
 
-function buildFsTree(img: TskJs.TSK, opts: TskJs.TskOptions) {
-    function _buildFsTree(opts: TskJs.TskOptions, fsroot: any) {
+function printFsTree(img: TskJs.TSK, opts: TskJs.TskOptions) {
+    let fsroot = "";
+
+    function repeat(t, num) {
+        return new Array(num + 1).join(t) + (num > 0 ? " " : "");
+    }
+
+    function _buildFsTree(opts: TskJs.TskOptions, level: number = 0) {
         img.list(opts).forEach(el => {
-            const element: any  = { ...el };
-            fsroot[el.path] = element;
+            let type = el.type[0];
+            if(type === 'u') type = "-";
+            let metaType = el.metaType[0];
+            if(metaType === 'u') metaType = "-";
+
+            fsroot += `${repeat("+", level)}${type}/${metaType} ${el.allocated ? "" : "* "}${el.inode}:\t${el.name}\n`;
             if(el.hasChildren) {
-                element.children = {};
                 const childOpts = { imgaddr: opts.imgaddr, inode: el.inode };
-                _buildFsTree(childOpts, element.children);
+                _buildFsTree(childOpts, level + 1);
             }
+
         });
     }
 
-    const fsroot = {};
-    _buildFsTree(opts, fsroot)
+    _buildFsTree(opts)
     return fsroot;
 }
 
 
 export function listFat() {
-    const expected = getJson("fs-fat.json");
+    const expected = getResource("fs-fat.txt");
 
     const img = new TSK(image);
-    const fsroot = buildFsTree(img, { imgaddr: imgaddr.fat });
+    const fsroot = printFsTree(img, { imgaddr: imgaddr.fat });
+    const result = new Buffer(fsroot);
 
-    expect(fsroot).to.deep.
-    equal(expected);
+    expect(result.toString()).deep.eq(expected.toString());
 }
 
 
 export function listNtfs() {
-    const expected = getJson("fs-ntfs.json");
+    const expected = getResource("fs-ntfs.txt");
 
     const img = new TSK(image);
-    const fsroot = buildFsTree(img, { imgaddr: imgaddr.ntfs });
+    const fsroot = printFsTree(img, { imgaddr: imgaddr.ntfs });
+    const result = new Buffer(fsroot);
 
-    expect(fsroot).to.deep.
-    equal(expected);
+    expect(result.toString()).deep.eq(expected.toString());
 }

@@ -1,0 +1,82 @@
+r/r 4-128-1:	$AttrDef
+r/r 8-128-2:	$BadClus
+r/r 8-128-1:	$BadClus:$Bad
+r/r 6-128-1:	$Bitmap
+r/r 7-128-1:	$Boot
+d/d 11-144-2:	$Extend
++ r/r 25-144-2:	$ObjId:$O
++ r/r 24-144-3:	$Quota:$O
++ r/r 24-144-2:	$Quota:$Q
++ r/r 26-144-2:	$Reparse:$R
+r/r 2-128-1:	$LogFile
+r/r 0-128-1:	$MFT
+r/r 1-128-1:	$MFTMirr
+r/r 9-128-2:	$Secure:$SDS
+r/r 9-144-3:	$Secure:$SDH
+r/r 9-144-4:	$Secure:$SII
+r/r 10-128-1:	$UpCase
+r/r 10-128-2:	$UpCase:$Info
+r/r 3-128-3:	$Volume
+d/d 65-144-2:	Program Files
++ d/r 66-128-6:	WinRAR:Win32App_1
++ d/d 66-144-2:	WinRAR
+++ d/r 66-128-6:	.:Win32App_1
+++ r/r 81-128-2:	7zxa.dll
+++ r/r 76-128-2:	Ace32Loader.exe
+++ r/r 89-128-2:	default.sfx
+++ r/r 90-128-2:	default64.sfx
+++ r/r 67-128-2:	Descript.ion
+++ r/r 68-128-2:	Leame.txt
+++ r/r 75-128-2:	licencia.rtf
+++ r/r 69-128-2:	License.txt
+++ r/r 70-128-2:	Novedades.txt
+++ r/r 72-128-2:	Order.htm
+++ r/r 77-128-2:	Rar.exe
+++ r/r 85-128-2:	rar.lng
+++ r/r 71-128-2:	Rar.txt
+++ r/r 82-128-2:	RarExt.dll
+++ r/r 86-128-2:	rarext.lng
+++ r/r 83-128-2:	RarExt32.dll
+++ r/r 73-128-2:	RarFiles.lst
+++ r/r 96-128-2:	rarnew.dat
+++ r/r 84-128-2:	UNACEV2.DLL
+++ r/r 78-128-2:	Uninstall.exe
+++ r/r 87-128-2:	uninstall.lng
+++ r/r 74-128-2:	Uninstall.lst
+++ r/r 79-128-2:	UnRAR.exe
+++ r/r 91-128-2:	WinCon.sfx
+++ r/r 92-128-2:	wincon64.sfx
+++ r/r 95-128-2:	winrar.chm
+++ r/r 80-128-2:	WinRAR.exe
+++ r/r 88-128-2:	winrar.lng
+++ r/r 93-128-2:	zip.sfx
+++ r/r 94-128-2:	zip64.sfx
+++ r/r 97-128-2:	zipnew.dat
+d/d 64-144-2:	Users
++ d/d 98-144-2:	diego
+++ d/d 105-144-2:	Documents
++++ r/r 103-128-2:	.test.swp
++++ r/r 109-128-2:	test
++++ -/r * 108-128-2:	.OtherFile.txt.swp
++++ -/r * 112-128-2:	.Or.swp
++++ -/r * 120-128-2:	.OtherFile.txt.swp
++++ -/r * 121-128-2:	OtherFile.txt
+++ d/d 99-144-2:	Downloads
++++ r/r 104-128-2:	winrar-x64-550es.exe
+++ d/d 106-144-2:	Music
++++ r/r 102-128-2:	4939.mp3
++++ r/r 102-128-4:	4939.mp3:xdg.origin.url
+++ d/d 100-144-2:	Pictures
+++ d/d 107-144-2:	Videos
++++ r/r 101-128-2:	SampleVideo_1280x720_1mb.mp4
++++ r/r 101-128-4:	SampleVideo_1280x720_1mb.mp4:xdg.origin.url
+d/- * 0:	WinRAR
+d/d 122:	$OrphanFiles
++ -/r * 16:	OrphanFile-16
++ -/r * 17:	OrphanFile-17
++ -/r * 18:	OrphanFile-18
++ -/r * 19:	OrphanFile-19
++ -/r * 20:	OrphanFile-20
++ -/r * 21:	OrphanFile-21
++ -/r * 22:	OrphanFile-22
++ -/r * 23:	OrphanFile-23

@@ -1,0 +1,35 @@
+d/d 4:	usr
+d/d 6:	home
++ d/d 646:	diego
+++ d/d 710:	.ssh
++++ r/r 966:	id_rsa
++++ r/r 968:	id_rsa.pub
+++ d/d 712:	Documents
++++ r/r 1158:	cv.pdf
++++ r/r 1161:	personal-information.txt
++++ d/d 1163:	Secret
+++++ r/r * 40006:	priv.key
++++ r/r 1165:	key.enc
++++ r/r * 1168:	.decrypt.sh.swp
++++ r/r 1170:	decrypt.sh
+++ d/d 714:	Pictures
++++ r/r * 1222:	animals.jpeg
++++ r/r 1224:	matilde.jpeg
++++ r/r 1227:	pexels-photo-697243.jpeg
++++ r/r 1229:	animals.png
+++ d/d 716:	Videos
++++ r/r 1288:	SampleVideo_1280x720_1mb.mp4
+++ d/d 718:	Desktop
+++ d/d 720:	Music
+++ d/d 722:	Public
+++ d/d 724:	Templates
+++ r/r * 727:	..bash_history.swp
+++ r/r 729:	.bash_history
+v/v 1602371:	$MBR
+v/v 1602372:	$FAT1
+v/v 1602373:	$FAT2
+d/d 1602374:	$OrphanFiles
++ -/r * 774:	_D_RSA
++ -/r * 776:	_D_RSA.PUB
++ -/r * 38599:	_OMPAN~1.SWP
++ -/r * 38602:	_OMPAN~1.TXT

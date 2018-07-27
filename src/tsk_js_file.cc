@@ -133,6 +133,27 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
     }
     obj->Set(key, String::NewFromUtf8(isolate, type));
 
+    // Meta Type
+    key = String::NewFromUtf8(isolate, "metaType");
+    switch (fs_file->meta->type) {
+        case TSK_FS_META_TYPE_REG:
+            type = "register";
+            break;
+
+        case TSK_FS_META_TYPE_DIR:
+            type = "directory";
+            break;
+
+        case TSK_FS_META_TYPE_VIRT:
+            type = "virtual";
+            break;
+
+        default:
+            type = "unknown";
+            break;
+    }
+    obj->Set(key, String::NewFromUtf8(isolate, type));
+
     // Inode
     key = String::NewFromUtf8(isolate, "inode");
     obj->Set(key, Number::New(isolate, fs_file->name->meta_addr));
