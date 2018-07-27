@@ -1,6 +1,6 @@
 {
   "name": "tsk-js",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "description": "A module that allows you to investigate disk images using Javascript by using The Sleuth Kit as library.",
   "main": "build/Release/tsk-js.node",
   "author": "frg",

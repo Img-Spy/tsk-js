@@ -4,6 +4,7 @@ const fs = require("fs");
 const extractZip = require("extract-zip");
 const rootPackageJson = require("../package.json");
 const request = require("request");
+const libUrl = `${process.platform}/${process.arch}/libtsk.a`;
 
 
 const unzip$ = Rx.Observable.of({
@@ -20,7 +21,6 @@ const unzip$ = Rx.Observable.of({
         if(err) {
             console.log("")
         } else {
-            console.log("Extracted");
             observer.next(session);
         }
     })
@@ -37,7 +37,7 @@ const download$ = Rx.Observable.of({
 })
 // Download file
 .mergeMap(session => Rx.Observable.create(observer => {
-    const url = `${session.baseUrl}/${process.platform}/${process.arch}/libtsk.a`;
+    const url = `${session.baseUrl}/${libUrl}`;
     request(url, {encoding: 'binary'}, function (error, response, body) {
         if (error) { observer.error(); }
         else { 
@@ -52,7 +52,7 @@ const download$ = Rx.Observable.of({
 .map(session => {
     fs.writeFile(session.libFile, session.body, 'binary', function (err) {});
 })
-.mapTo("Downloaded libtsk.a")
+.mapTo(`Downloaded ${libUrl}`)
 
 
 const preinstall = [
