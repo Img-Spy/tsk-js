@@ -1,0 +1,18 @@
+{
+  "version": "0.1.1",
+  "main": "ls.js",
+  "name": "fsbash-command-ls",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "fsbash": {
+    "help": "Lists files inside a folder"
+  },
+  "dependencies": {
+    "colors": "^1.2.4",
+    "argparse": "^1.0.10"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "main": "cd.js",
+  "name": "fsbash-command-cd",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "fsbash": {
+    "help": "ble ble"
+  },
+  "dependencies": {
+    "argparse": "^1.0.10"
+  }
+}

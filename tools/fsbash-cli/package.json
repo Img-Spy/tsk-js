@@ -1,0 +1,25 @@
+{
+  "name": "fsbash-cli",
+  "version": "0.1.16",
+  "description": "A suite of digital forensic tools",
+  "main": "fsbash.js",
+  "scripts": {
+    "start": "./index.js",
+    "postinstall": "node_modules/.bin/install-local bin/*",
+    "link": "cd node_modules; rm fsbash* -rf; ln -s ../bin/* .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "fsbash": "./index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "linklocal": "^2.8.2"
+  },
+  "dependencies": {
+    "add-zero": "^1.0.0",
+    "argparse": "^1.0.10",
+    "install-local": "^0.5.0"
+  }
+}
