@@ -1,4 +1,7 @@
 /docker
 /custom
-/examples
+/examples/hdd-test.dd
+/theme
 Dockerfile
+npm-debug.log
+.bookignore

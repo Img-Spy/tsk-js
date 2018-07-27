@@ -74,6 +74,24 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
     TSK_FS_FILE* fs_file;
     int ret = 0;
 
+    /* Make a special case for NTFS so we can identify all of the
+     * alternate data streams!
+     */
+    /* Pending */
+//    if ((TSK_FS_TYPE_ISNTFS(fs_file->fs_info->ftype))
+//        && (fs_file->meta)) {
+//        int i, cnt;
+//
+//        // cycle through the attributes
+//        cnt = tsk_fs_file_attr_getsize(fs_file);
+//        for (i = 0; i < cnt; i++) {
+//            const TSK_FS_ATTR *fs_attr =
+//                tsk_fs_file_attr_get_idx(fs_file, i);
+//            if (!fs_attr)
+//                continue;
+//        }
+//    }
+
     // Name
     fs_file = this->_fs_file;
     key = String::NewFromUtf8(isolate, "name");
@@ -90,9 +108,11 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
 
     // Allocated
     key = String::NewFromUtf8(isolate, "allocated");
-    allocated = fs_file->name->flags == TSK_FS_NAME_FLAG_ALLOC;
+    allocated = (fs_file->name->flags & TSK_FS_NAME_FLAG_ALLOC) == 
+                    TSK_FS_NAME_FLAG_ALLOC;
     obj->Set(key, Boolean::New(isolate, allocated));
 
+    // Type (TODO: add meta type also)
     key = String::NewFromUtf8(isolate, "type");
     switch (fs_file->name->type) {
         case TSK_FS_NAME_TYPE_REG:
@@ -113,6 +133,7 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
     }
     obj->Set(key, String::NewFromUtf8(isolate, type));
 
+    // Inode
     key = String::NewFromUtf8(isolate, "inode");
     obj->Set(key, Number::New(isolate, fs_file->name->meta_addr));
 

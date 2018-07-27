@@ -7,5 +7,11 @@ module.exports = {
         css: [
             'toogle-span.css'
         ]
+    },
+    filters: {
+        downloadLink: (body, kwargs) => {
+            const { href } = kwargs;
+            return `<a href="${href}" target="_blank" download>${body}</a>`;
+        }
     }
 }

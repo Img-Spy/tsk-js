@@ -1,0 +1,33 @@
+{
+    "type": "disk",
+    "partitions": [
+        {
+            "size": 512,
+            "start": 0,
+            "end": 0,
+            "description": "Primary Table (#0)",
+            "hasFs": false
+        },
+        {
+            "size": 1048576,
+            "start": 0,
+            "end": 2047,
+            "description": "Unallocated",
+            "hasFs": false
+        },
+        {
+            "size": 26214400,
+            "start": 2048,
+            "end": 53247,
+            "description": "Win95 FAT32 (0x0b)",
+            "hasFs": true
+        },
+        {
+            "size": 25165824,
+            "start": 53248,
+            "end": 102399,
+            "description": "NTFS / exFAT (0x07)",
+            "hasFs": true
+        }
+    ]
+}

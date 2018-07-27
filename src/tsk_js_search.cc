@@ -82,13 +82,13 @@ srch_fs(TSK_FS_FILE * fs_file, const char *a_path, SRCH_FS_ITR *itr)
     if (fs_file->name->type == TSK_FS_NAME_TYPE_VIRT) {
         return TSK_WALK_CONT;
     }
-    
+
     if (!fs_file->meta) {
         return TSK_WALK_CONT;
     }
 
     // 
-    if (fs_file->name->type == TSK_FS_NAME_TYPE_REG) {
+    if (fs_file->meta->type == TSK_FS_META_TYPE_REG) {
         tsk_file = new TskFile(fs_file);
         int err = !tsk_file->get_content(itr->isolate, &buf);
 
@@ -107,7 +107,7 @@ srch_fs(TSK_FS_FILE * fs_file, const char *a_path, SRCH_FS_ITR *itr)
             bool found = true;
 
             for (size_t j = 0; j < itr->needle_length; j++) {
-                if (tolower(buf.data[i + j]) != itr->needle[j]) {
+                if (buf.data[i + j] != itr->needle[j]) {
                     found = false;
                     break;
                 }

@@ -5,12 +5,14 @@
 # Compiled files
 /build
 /Makefile
+/lib/libtsk.a
 
 # Node packages
-node_modules
+**/node_modules
+**/package-lock.json
 
 # Documentation
-/_book
+_book
 /docs/generated
 
 # Test

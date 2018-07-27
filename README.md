@@ -24,10 +24,16 @@ You can install it just using the command:
 $ npm install tsk-js --save
 ```
 
+## Documentation
+The full documentation can be found
+[here](http://docs-tsk-js.54.37.131.126.xip.io/)
+
 ## Usage example
 
 This is an example of a script that performs a brief analysis. To learn how to 
-use it in more detail go to [User guide](./static/guide.md) section.
+use it in more detail go to
+[User guide](http://docs-tsk-js.54.37.131.126.xip.io/static/guide.html) 
+section.
 
 [//]: # (TODO: Provide the image to execute this example)
 

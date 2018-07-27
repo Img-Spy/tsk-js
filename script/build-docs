@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+from lib import execute, rmdir
+
+config = {
+    "doc_path": "./docs",
+    "generated_path": "./docs/generated",
+    "options": "typedoc.js",
+    "source": "typings/tsk-js/index.d.ts"
+}
+
+def main():
+    print("Remove previous documentation.")
+    rmdir(config["generated_path"])
+    print("Generate api reference")
+    execute([
+        "./node_modules/.bin/typedoc",
+        "--options", config["options"],
+        config["source"]
+    ])
+    print("Build documentation")
+    execute([
+        "./node_modules/.bin/gitbook", "install", config["doc_path"]
+    ])
+    execute([
+        "./node_modules/.bin/gitbook", "build", config["doc_path"]
+    ])
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+import shutil
+from lib import execute, file_exists
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sleuthkit_path = "./vendor/sleuthkit"
+sleuthkit_comp_lib_path = "./vendor/sleuthkit/tsk/.libs/libtsk.a"
+sleuthkit_lib_path = "./lib/libtsk.a"
+lib_path = "./lib"
+
+
+def compile_sleuthkit():
+    print("Prepare sleutkit library")
+    if not file_exists(sleuthkit_path + "/configure"):
+        print("  - Bootstrap")
+        execute("./bootstrap", cwd=sleuthkit_path)
+
+    if not file_exists(sleuthkit_path + "/Makefile"):
+        print("  - Configure")
+        config_cmd = ["./configure"]
+        env = os.environ
+
+        config = os.getenv("TSK_JS_CONFIG_ARGS")
+        if config is not None:
+            config_cmd += config.split(',')
+
+        env_custom = os.getenv("TSK_JS_CONFIG_ENV")
+        if env_custom is not None:
+            for env_pair in env_custom.split(','):
+                key, value = env_pair.split('=')
+                env[key] = value
+
+        execute(config_cmd, cwd=sleuthkit_path, env=env)
+
+    print("Build sleutkit library")
+    execute("make", cwd=sleuthkit_path)
+
+    print("Copy library")
+    shutil.copy(sleuthkit_comp_lib_path, lib_path)
+
+
+def main():
+    execute(["node", "preinstall.js"], cwd=dir_path)
+
+    if not file_exists(sleuthkit_lib_path):
+        compile_sleuthkit()
+
+    print("Build tsk-js")
+    if not file_exists("./build/Release/tsk-js.node"):
+        execute(["node-gyp", "rebuild"])
+
+
+if __name__ == '__main__':
+    sys.exit(main())

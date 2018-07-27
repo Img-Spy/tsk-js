@@ -35,11 +35,12 @@ add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
     Local<Object> item;
     TskFile *tskFile = NULL;
 
-    if (TSK_FS_ISDOT(fs_file->name->name)) {
+    if (TSK_FS_ISDOT(fs_file->name->name) || fs_file->name->meta_addr == 0 ||
+            fs_file->meta == 0) {
         return TSK_WALK_CONT;
     }
-
-    // Create object and assign inside the list
+ 
+   // Create object and assign inside the list
     item = Object::New(itr->isolate);
     itr->items->Set(itr->i++, item);
 

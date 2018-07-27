@@ -3,7 +3,7 @@
         {
             "target_name": "tsk-js",
             # Path relative to source files (./src)
-            "libraries": ["-Wl,-Bsymbolic,../vendor/sleuthkit/tsk/.libs/libtsk.a"],
+            "libraries": ["-Wl,-Bsymbolic,../lib/libtsk.a"],
             "include_dirs": [
                 "./vendor/sleuthkit/"
             ],
