@@ -49,10 +49,17 @@ function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions): any[][] {
             if(el.path === "$OrphanFiles") {
                 return;
             }
+            let date = "0000-00-00T00:00:00Z";
+            if(el.date) {
+                const timeOffsetInMS = el.date.getTimezoneOffset() * 60000;
+                date = new Date(el.date.getTime()
+            )
+                    .toISOString()
+                    .replace(/\..+Z/, "Z"); 
+            }
 
             const row = [
-                el.date ? el.date.toISOString().replace(/\..+Z/, "Z") :
-                          "0000-00-00T00:00:00Z",
+                date,
                 getActions(el),
                 el.inode,
                 "/" + el.path + (el.allocated ? "" : " (deleted)")
@@ -78,6 +85,7 @@ export function timeline() {
     const img = new TSK(image);
     const csv = getTimelineCsv(img, { imgaddr: imgaddr.fat });
     const result = writeCsv(sortCsv(csv));
+    console.log(result);
 
     expect(result).deep.eq(expected.toString());
 }
