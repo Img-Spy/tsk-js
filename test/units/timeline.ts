@@ -52,10 +52,9 @@ function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions): any[][] {
             let date = "0000-00-00T00:00:00Z";
             if(el.date) {
                 const timeOffsetInMS = el.date.getTimezoneOffset() * 60000;
-                date = new Date(el.date.getTime()
-            )
+                date = new Date(el.date.getTime() - timeOffsetInMS)
                     .toISOString()
-                    .replace(/\..+Z/, "Z"); 
+                    .replace(/\..+Z/, "Z");
             }
 
             const row = [
@@ -85,7 +84,6 @@ export function timeline() {
     const img = new TSK(image);
     const csv = getTimelineCsv(img, { imgaddr: imgaddr.fat });
     const result = writeCsv(sortCsv(csv));
-    console.log(result);
 
     expect(result).deep.eq(expected.toString());
 }

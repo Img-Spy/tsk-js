@@ -85,7 +85,7 @@ create_timeline_item(Local<Context> context, Isolate *isolate,
     // Date
     if (time != 0) {
         key = String::NewFromUtf8(isolate, "date");
-        item->Set(key, Date::New(context, time * 1000).ToLocalChecked());
+        item->Set(key, Date::New(context, (double)time * 1000).ToLocalChecked());
     }
 
     // Actions
@@ -111,10 +111,10 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
 
     int start, mid, end;
     int length, plength, nlength;
-    time_t it_time;
+    double it_time;
     char *it_name;
     char *path;
-    int comp;
+    double comp;
 
     context = Context::New(itr->isolate);
     item = Object::New(itr->isolate);
@@ -158,7 +158,7 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
             it_time = Date::Cast(*it_val)->ValueOf();
         }
 
-        comp = time * 1000 - it_time;
+        comp = (double)time * 1000 - it_time;
 
         // Compare path
         if (comp == 0) {
@@ -179,15 +179,16 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
             break; 
         }
 
-        // If x greater, ignore left half  
+        // If x greater, ignore left half
         if (comp > 0)
             start = mid + 1;
 
-        // If x is smaller, ignore right half 
+        // If x is smaller, ignore right half
         else
             end = mid - 1; 
     }
 
+    // The same item exists so append action
     if (comp == 0) {
         key = String::NewFromUtf8(itr->isolate, "actions");
         actions = Array::Cast(
