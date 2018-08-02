@@ -63,7 +63,7 @@ TSK::Get(const FunctionCallbackInfo<Value>& args)
         NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
     }
 
-    tsk_file = new TskFile(fs_file);
+    tsk_file = new TskFile(fs_file, NULL);
     tsk_file->get_content(isolate, &buf);
     ret = Buffer::New(isolate, buf.data, buf.size)
             .ToLocalChecked();

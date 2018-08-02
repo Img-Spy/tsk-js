@@ -43,6 +43,7 @@ declare namespace TskJs {
         type: "directory" | "virtual" | "register" | "unknown";
         metaType: "directory" | "virtual" | "register" | "unknown";
         inode: number;
+        metaAddr: string;
         hasChildren?: boolean;
     }
 

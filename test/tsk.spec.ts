@@ -11,7 +11,7 @@ describe("TSK", () => {
 
     describe("#list()", () => {
         it("should list files inside a FAT partition", tsk.listFat);
-        it.skip("should list files inside a NTFS partition", tsk.listNtfs);
+        it("should list files inside a NTFS partition", tsk.listNtfs);
     });
 
     describe("#get()", () => {

@@ -89,7 +89,7 @@ srch_fs(TSK_FS_FILE * fs_file, const char *a_path, SRCH_FS_ITR *itr)
 
     // 
     if (fs_file->meta->type == TSK_FS_META_TYPE_REG) {
-        tsk_file = new TskFile(fs_file);
+        tsk_file = new TskFile(fs_file, NULL);
         int err = !tsk_file->get_content(itr->isolate, &buf);
 
         if (err) {

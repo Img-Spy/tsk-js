@@ -49,16 +49,19 @@ typedef struct {
 
 class TskFile : public node::ObjectWrap {
 public:
-    TskFile(TSK_FS_FILE *fs_file);
+    TskFile(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *attr);
     ~TskFile();
 
     int set_properties(v8::Isolate *isolate, v8::Object *obj,
                        const char* a_path);
+    int get_meta_addr(char **meta_addr);
+    int get_name(char **name);
     int get_content(v8::Isolate *isolate, BUFFER_INFO *buf);
-    
+
 private:
     TSK_FS_FILE *_fs_file;
-    
+    const TSK_FS_ATTR *_fs_attr;
+
 };
 
 class TskOptions : public node::ObjectWrap {

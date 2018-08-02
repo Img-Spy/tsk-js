@@ -22,6 +22,16 @@ using v8::Value;
 using v8::Data;
 using v8::Array;
 
+
+const char *tsk_js_name_type_str[TSK_FS_NAME_TYPE_STR_MAX] = {
+    "unknown", "p", "c", "directory", "b", "register",
+    "l", "s", "h", "w", "virtual"
+};
+const char *tsk_js_meta_type_str[TSK_FS_META_TYPE_STR_MAX] = {
+    "unknown", "register", "directory", "p", "c", "b",
+    "l", "s", "h", "w", "virtual"
+};
+
 /* -------------------------------------------------------------------------- */
 static TSK_WALK_RET_ENUM
 add_content(TSK_FS_FILE *fs_file, TSK_OFF_T a_off, TSK_DADDR_T addr,
@@ -38,9 +48,10 @@ add_content(TSK_FS_FILE *fs_file, TSK_OFF_T a_off, TSK_DADDR_T addr,
 }
 /* -------------------------------------------------------------------------- */
 
-TskFile::TskFile(TSK_FS_FILE* fs_file)
+TskFile::TskFile(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr)
 {
     this->_fs_file = fs_file;
+    this->_fs_attr = fs_attr;
 }
 
 TskFile::~TskFile() { }
@@ -62,40 +73,103 @@ TskFile::get_content(v8::Isolate *isolate, BUFFER_INFO *buf)
     return 1;
 }
 
+
+int
+TskFile::get_meta_addr(char **meta_addr)
+{
+    std::string inode, type, id;
+    const TSK_FS_ATTR *fs_attr = this->_fs_attr;
+    const TSK_FS_FILE *fs_file = this->_fs_file;
+    int length = 0;
+
+    inode = std::to_string(fs_file->name->meta_addr);
+    length += inode.length();
+
+    if(fs_attr) {
+        type = std::to_string(fs_attr->type);
+        id = std::to_string(fs_attr->id);
+        length += type.length() + id.length() + 2 /* don't forget -*/;
+    }
+
+    *meta_addr = (char *)malloc(length + 1 /* \0 */);
+    strcpy(*meta_addr, inode.c_str());
+
+    if(fs_attr) {
+        int acc = inode.length();
+        strcpy(*meta_addr + acc, "-");
+        acc++;
+        strcpy(*meta_addr + acc, type.c_str());
+        acc += type.length();
+        strcpy(*meta_addr + acc, "-");
+        acc++;
+        strcpy(*meta_addr + acc, id.c_str());
+    }
+
+    (*meta_addr)[length] = '\0';
+
+    return 1;
+}
+
+
+int
+TskFile::get_name(char **name)
+{
+    const TSK_FS_FILE *fs_file = this->_fs_file;
+    const TSK_FS_ATTR *fs_attr = this->_fs_attr;
+    size_t len, name_size;
+    uint8_t expanded_name;
+
+    expanded_name = (
+        fs_attr &&
+        fs_attr->name && (
+            (fs_attr->type != TSK_FS_ATTR_TYPE_NTFS_IDXROOT) ||
+            (strcmp(fs_attr->name, "$I30") != 0)
+        )
+    );
+    len = name_size = strlen(fs_file->name->name);
+
+    if(expanded_name) {
+        len += strlen(fs_attr->name) + 1 /* ':' */;
+    }
+
+    *name = (char *)malloc(len + 1 /* '\0' */);
+    strcpy(*name, fs_file->name->name);
+
+    if(expanded_name) {
+        (*name)[name_size] = ':';
+        strcpy((*name) + name_size + 1, fs_attr->name);
+    }
+
+    (*name)[len] = '\0';
+
+    return 1;
+}
+
+
 int
 TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
 {
     Local<Value> key;
     bool allocated, has_children;
-    const char* type;
-    char *path = NULL;
+    char *path = NULL, *meta_addr = NULL;
     TSK_FS_DIR *fs_dir;
     int plength, nlength;
-    TSK_FS_FILE* fs_file;
+    const TSK_FS_FILE *fs_file;
+    const TSK_FS_ATTR *fs_attr;
     int ret = 0;
+    char *name;
+    const char *meta_type, *name_type;
+    TSK_FS_META_TYPE_ENUM meta_type_enum;
 
-    /* Make a special case for NTFS so we can identify all of the
-     * alternate data streams!
-     */
-    /* Pending */
-//    if ((TSK_FS_TYPE_ISNTFS(fs_file->fs_info->ftype))
-//        && (fs_file->meta)) {
-//        int i, cnt;
-//
-//        // cycle through the attributes
-//        cnt = tsk_fs_file_attr_getsize(fs_file);
-//        for (i = 0; i < cnt; i++) {
-//            const TSK_FS_ATTR *fs_attr =
-//                tsk_fs_file_attr_get_idx(fs_file, i);
-//            if (!fs_attr)
-//                continue;
-//        }
-//    }
+    fs_file = this->_fs_file;
+    fs_attr = this->_fs_attr;
 
     // Name
-    fs_file = this->_fs_file;
-    key = String::NewFromUtf8(isolate, "name");
-    obj->Set(key, String::NewFromUtf8(isolate, fs_file->name->name));
+    if(this->get_name(&name)) {
+        key = String::NewFromUtf8(isolate, "name");
+        obj->Set(key, String::NewFromUtf8(isolate, name));
+        free(name);
+    }
 
     // Path    
     plength = strlen(a_path);
@@ -112,54 +186,49 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
                     TSK_FS_NAME_FLAG_ALLOC;
     obj->Set(key, Boolean::New(isolate, allocated));
 
-    // Type (TODO: add meta type also)
-    key = String::NewFromUtf8(isolate, "type");
-    switch (fs_file->name->type) {
-        case TSK_FS_NAME_TYPE_REG:
-            type = "register";
-            break;
-
-        case TSK_FS_NAME_TYPE_DIR:
-            type = "directory";
-            break;
-
-        case TSK_FS_NAME_TYPE_VIRT:
-            type = "virtual";
-            break;
-
-        default:
-            type = "unknown";
-            break;
+    // Type
+    if (fs_file->name->type < TSK_FS_NAME_TYPE_STR_MAX) {
+        name_type = tsk_js_name_type_str[fs_file->name->type];
+    } else {
+        name_type = tsk_js_name_type_str[TSK_FS_NAME_TYPE_UNDEF];
     }
-    obj->Set(key, String::NewFromUtf8(isolate, type));
+
+    key = String::NewFromUtf8(isolate, "type");
+    obj->Set(key, String::NewFromUtf8(isolate, name_type));
 
     // Meta Type
-    key = String::NewFromUtf8(isolate, "metaType");
-    switch (fs_file->meta->type) {
-        case TSK_FS_META_TYPE_REG:
-            type = "register";
-            break;
-
-        case TSK_FS_META_TYPE_DIR:
-            type = "directory";
-            break;
-
-        case TSK_FS_META_TYPE_VIRT:
-            type = "virtual";
-            break;
-
-        default:
-            type = "unknown";
-            break;
+    if(fs_file->meta) {
+        if ((fs_attr) && (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_DATA) &&
+            (fs_file->meta->type == TSK_FS_META_TYPE_DIR)) {
+            meta_type_enum = TSK_FS_META_TYPE_REG;
+        } else {
+            meta_type_enum = fs_file->meta->type;
+        }
+    } else {
+        meta_type_enum = TSK_FS_META_TYPE_UNDEF;
     }
-    obj->Set(key, String::NewFromUtf8(isolate, type));
+
+    if (meta_type_enum < TSK_FS_META_TYPE_STR_MAX) {
+        meta_type = tsk_js_meta_type_str[meta_type_enum];
+    } else {
+        meta_type = tsk_js_meta_type_str[TSK_FS_META_TYPE_UNDEF];
+    }
+    key = String::NewFromUtf8(isolate, "metaType");
+    obj->Set(key, String::NewFromUtf8(isolate, meta_type));
 
     // Inode
     key = String::NewFromUtf8(isolate, "inode");
     obj->Set(key, Number::New(isolate, fs_file->name->meta_addr));
 
+    // Meta address
+    if(this->get_meta_addr(&meta_addr)) {
+        key = String::NewFromUtf8(isolate, "metaAddr");
+        obj->Set(key, String::NewFromUtf8(isolate, meta_addr));
+        free(meta_addr);
+    }
+
     // get the list of entries in the directory
-    if (fs_file->name->type == TSK_FS_NAME_TYPE_DIR) {
+    if (meta_type_enum == TSK_FS_META_TYPE_DIR && fs_file->name->type == TSK_FS_NAME_TYPE_DIR) {
         if (fs_file->name->meta_addr == TSK_FS_ORPHANDIR_INUM(fs_file->fs_info)) {
             has_children = true;
         } else {

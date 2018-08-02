@@ -29,25 +29,86 @@ typedef struct {
     Isolate *isolate;
 } ADD_FS_ITR;
 
-static TSK_WALK_RET_ENUM
-add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
-{
-    Local<Object> item;
-    TskFile *tskFile = NULL;
 
-    if (TSK_FS_ISDOT(fs_file->name->name) || fs_file->name->meta_addr == 0 ||
-            fs_file->meta == 0) {
-        return TSK_WALK_CONT;
-    }
- 
-   // Create object and assign inside the list
+int
+append_item(TSK_FS_FILE * fs_file, const TSK_FS_ATTR * fs_attr,
+            const char *a_path, ADD_FS_ITR *itr) {
+    int ret = 1;
+    TskFile *tskFile;
+    Local<Object> item;
+
+    // Create object and assign inside the list
+    tskFile = new TskFile(fs_file, fs_attr);
     item = Object::New(itr->isolate);
     itr->items->Set(itr->i++, item);
 
-    // Fill the object
-    tskFile = new TskFile(fs_file);
+    // Fill object properties
     if (!tskFile->set_properties(itr->isolate, *item, a_path)) {
-        return TSK_WALK_ERROR;
+        ret = 0;
+    }
+
+    delete(tskFile);
+    return 1;
+}
+
+
+static TSK_WALK_RET_ENUM
+add_fs(TSK_FS_FILE * fs_file, const char *a_path, ADD_FS_ITR *itr)
+{
+    if ((TSK_FS_TYPE_ISNTFS(fs_file->fs_info->ftype))
+        && (fs_file->meta)) {
+        uint8_t printed = 0;
+        int i, cnt;
+
+        // cycle through the attributes
+        cnt = tsk_fs_file_attr_getsize(fs_file);
+        for (i = 0; i < cnt; i++) {
+            const TSK_FS_ATTR *fs_attr = tsk_fs_file_attr_get_idx(fs_file, i);
+            if (!fs_attr)
+                continue;
+
+            if (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_DATA) {
+                printed = 1;
+
+                if (fs_file->meta->type == TSK_FS_META_TYPE_DIR) {
+                    /* we don't want to print the ..:blah stream if
+                        * the -a flag was not given
+                        */
+                    if ((fs_file->name->name[0] == '.')
+                        && (fs_file->name->name[1])
+                        && (fs_file->name->name[2] == '\0')) {
+                        continue;
+                    }
+                }
+
+                if(!append_item(fs_file, fs_attr, a_path, itr)) {
+                    return TSK_WALK_ERROR;
+                }
+            } else if (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_IDXROOT) {
+                printed = 1;
+
+                if ( TSK_FS_ISDOT(fs_file->name->name) ) {
+                    continue;
+                }
+
+                if(!append_item(fs_file, fs_attr, a_path, itr)) {
+                    return TSK_WALK_ERROR;
+                }
+            }
+        }
+
+        if(printed == 0) {
+            if(!append_item(fs_file, NULL, a_path, itr)) {
+                return TSK_WALK_ERROR;
+            }
+        }
+    } else {
+        if (TSK_FS_ISDOT(fs_file->name->name)) {
+            return TSK_WALK_CONT;
+        }
+        if(!append_item(fs_file, NULL, a_path, itr)) {
+            return TSK_WALK_ERROR;
+        }
     }
 
     return TSK_WALK_CONT;

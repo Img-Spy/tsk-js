@@ -18,7 +18,7 @@ function printFsTree(img: TskJs.TSK, opts: TskJs.TskOptions) {
             let metaType = el.metaType[0];
             if(metaType === 'u') metaType = "-";
 
-            fsroot += `${repeat("+", level)}${type}/${metaType} ${el.allocated ? "" : "* "}${el.inode}:\t${el.name}\n`;
+            fsroot += `${repeat("+", level)}${type}/${metaType} ${el.allocated ? "" : "* "}${el.metaAddr}:\t${el.name}\n`;
             if(el.hasChildren) {
                 const childOpts = { imgaddr: opts.imgaddr, inode: el.inode };
                 _buildFsTree(childOpts, level + 1);
