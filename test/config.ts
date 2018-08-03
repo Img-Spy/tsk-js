@@ -15,9 +15,10 @@ const TSK: TskJs.TskConstructor = (() => {
 const image = path.join(__dirname, "hdd-test.dd");
 const imgaddr = { fat: 2048, ntfs: 53248 };
 const fileInode = 38602;
+const expectedHash = "eec26e3d140ae4df92a7a68afd6c9f9d046a1a96";
 
 const config = {
-    DEBUG, TSK, image, imgaddr, fileInode,
+    DEBUG, TSK, image, imgaddr, fileInode, expectedHash,
 
     getResource: (relPath) => {
         const absPath = path.join(__dirname, "resources", relPath);

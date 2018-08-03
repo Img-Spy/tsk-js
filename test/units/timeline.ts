@@ -1,23 +1,25 @@
 import { TSK, 
-    image, imgaddr, fileInode,
+    image, imgaddr,
     getJson, getResource } from "../config";
 import { expect } from "chai";
-import { lstat } from "fs";
+import * as moment from "moment";
 
 
-function sortCsv(csv: any[][]) {
+function sortCsv(csv: string[][]) {
     const sortFn = (a, b) => {
-        const dateRow = 0, inodeRow = 2;
-        const aDate: string = a[dateRow], bDate: string = b[dateRow];
-        const aInode: number = a[inodeRow], bInode: number = b[inodeRow];
+        const firstSort = 0, secondSort = 3;
+        const aFirstValue: string = a[firstSort].toLowerCase(),
+              bFirstValue: string = b[firstSort].toLowerCase();
+        const aSecondValue: string = a[secondSort].toLowerCase(),
+              bSecondValue: string = b[secondSort].toLowerCase();
 
-        if(aDate > bDate) {
+        if(aFirstValue > bFirstValue) {
             return 2;
-        } else if(aDate < bDate) {
+        } else if(aFirstValue < bFirstValue) {
             return -2;
-        } else if(aInode > bInode) {
+        } else if(aSecondValue > bSecondValue) {
             return 1;
-        } else if(aInode < bInode) {
+        } else if(aSecondValue < bSecondValue) {
             return -1;
         } else {
             return 0;
@@ -41,7 +43,8 @@ function getActions(el: TskJs.TimelineItem): string {
 }
 
 
-function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions): any[][] {
+function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions,
+                        mountPoint: string): any[][] {
     const csv = [];
     img
         .timeline(() => { }, opts)
@@ -51,8 +54,7 @@ function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions): any[][] {
             }
             let date = "0000-00-00T00:00:00Z";
             if(el.date) {
-                const timeOffsetInMS = el.date.getTimezoneOffset() * 60000;
-                date = new Date(el.date.getTime() - timeOffsetInMS)
+                date = moment(el.date)
                     .toISOString()
                     .replace(/\..+Z/, "Z");
             }
@@ -60,8 +62,10 @@ function getTimelineCsv(img: TskJs.TSK, opts: TskJs.TskOptions): any[][] {
             const row = [
                 date,
                 getActions(el),
-                el.inode,
-                "/" + el.path + (el.allocated ? "" : " (deleted)")
+                el.metaAddr,
+                mountPoint + el.path +
+                    (el.fileNameFlag ? " ($FILE_NAME)" : "") +
+                    (el.allocated ? "" : " (deleted)")
             ];
             csv.push(row);
         });
@@ -75,14 +79,26 @@ function writeCsv(csv: any[][]): string {
             prev.push(curr.join(","))
             return prev;
         }, [])
-        .join("\n");
+        .join("\n") + "\n";
 }
 
-export function timeline() {
-    const expected = getResource("timeline.csv");
+
+export function timelineFat() {
+    const expected = getResource("timeline-fat.csv");
 
     const img = new TSK(image);
-    const csv = getTimelineCsv(img, { imgaddr: imgaddr.fat });
+    const csv = getTimelineCsv(img, { imgaddr: imgaddr.fat }, "/");
+    const result = writeCsv(sortCsv(csv));
+
+    expect(result).deep.eq(expected.toString());
+}
+
+
+export function timelineNtfs() {
+    const expected = getResource("timeline-ntfs.csv");
+
+    const img = new TSK(image);
+    const csv = getTimelineCsv(img, { imgaddr: imgaddr.ntfs }, "C:/");
     const result = writeCsv(sortCsv(csv));
 
     expect(result).deep.eq(expected.toString());

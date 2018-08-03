@@ -52,13 +52,9 @@ declare namespace TskJs {
     export type SearchCallback =
         (file: ImgFile, context: Buffer, index: number) => void;
 
-    export interface TimelineItem {
-        path: string;
-        name: string;
-        allocated: boolean;
-        type: "directory" | "virtual" | "register" | "unknown";
-        inode: number;
+    export interface TimelineItem extends ImgFile {
         actions: Array<DiskAction>;
+        fileNameFlag: Boolean;
         date: Date;
     }
 }

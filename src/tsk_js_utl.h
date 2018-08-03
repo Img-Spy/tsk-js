@@ -58,10 +58,13 @@ public:
     int get_name(char **name);
     int get_content(v8::Isolate *isolate, BUFFER_INFO *buf);
 
+    static int get_meta_addr(TSK_FS_FILE *fs_file,
+                             const TSK_FS_ATTR *fs_attr,
+                             char **meta_addr);
+
 private:
     TSK_FS_FILE *_fs_file;
     const TSK_FS_ATTR *_fs_attr;
-
 };
 
 class TskOptions : public node::ObjectWrap {

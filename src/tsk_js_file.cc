@@ -77,9 +77,15 @@ TskFile::get_content(v8::Isolate *isolate, BUFFER_INFO *buf)
 int
 TskFile::get_meta_addr(char **meta_addr)
 {
+    return TskFile::get_meta_addr(this->_fs_file, this->_fs_attr, meta_addr);
+}
+
+
+int
+TskFile::get_meta_addr(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
+                       char **meta_addr)
+{
     std::string inode, type, id;
-    const TSK_FS_ATTR *fs_attr = this->_fs_attr;
-    const TSK_FS_FILE *fs_file = this->_fs_file;
     int length = 0;
 
     inode = std::to_string(fs_file->name->meta_addr);
@@ -150,14 +156,13 @@ int
 TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
 {
     Local<Value> key;
-    bool allocated, has_children;
-    char *path = NULL, *meta_addr = NULL;
+    bool allocated, has_children = false;
+    char *path = NULL, *meta_addr = NULL, *name = NULL;
     TSK_FS_DIR *fs_dir;
     int plength, nlength;
     const TSK_FS_FILE *fs_file;
     const TSK_FS_ATTR *fs_attr;
     int ret = 0;
-    char *name;
     const char *meta_type, *name_type;
     TSK_FS_META_TYPE_ENUM meta_type_enum;
 
@@ -165,18 +170,20 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
     fs_attr = this->_fs_attr;
 
     // Name
-    if(this->get_name(&name)) {
-        key = String::NewFromUtf8(isolate, "name");
-        obj->Set(key, String::NewFromUtf8(isolate, name));
-        free(name);
+    if(!this->get_name(&name)) {
+        goto err;
     }
 
-    // Path    
+    key = String::NewFromUtf8(isolate, "name");
+    obj->Set(key, String::NewFromUtf8(isolate, name));
+
+    // Path
     plength = strlen(a_path);
-    nlength = strlen(fs_file->name->name);
+    nlength = strlen(name);
     path = (char *) malloc(plength + nlength + 1);
     memcpy(path, a_path, plength);
-    memcpy(path + plength, fs_file->name->name, nlength + 1);
+    memcpy(path + plength, name, nlength + 1);
+
     key = String::NewFromUtf8(isolate, "path");
     obj->Set(key, String::NewFromUtf8(isolate, path));
 
@@ -221,13 +228,14 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
     obj->Set(key, Number::New(isolate, fs_file->name->meta_addr));
 
     // Meta address
-    if(this->get_meta_addr(&meta_addr)) {
-        key = String::NewFromUtf8(isolate, "metaAddr");
-        obj->Set(key, String::NewFromUtf8(isolate, meta_addr));
-        free(meta_addr);
+    if(!this->get_meta_addr(&meta_addr)) {
+        goto err;
     }
 
-    // get the list of entries in the directory
+    key = String::NewFromUtf8(isolate, "metaAddr");
+    obj->Set(key, String::NewFromUtf8(isolate, meta_addr));
+
+    // Has children
     if (meta_type_enum == TSK_FS_META_TYPE_DIR && fs_file->name->type == TSK_FS_NAME_TYPE_DIR) {
         if (fs_file->name->meta_addr == TSK_FS_ORPHANDIR_INUM(fs_file->fs_info)) {
             has_children = true;
@@ -239,13 +247,17 @@ TskFile::set_properties(Isolate *isolate, Object *obj, const char* a_path)
 
             has_children = fs_dir->names_used > 2;
         }
-        key = String::NewFromUtf8(isolate, "hasChildren");
-        obj->Set(key, Boolean::New(isolate, has_children));
     }
+
+    key = String::NewFromUtf8(isolate, "hasChildren");
+    obj->Set(key, Boolean::New(isolate, has_children));
 
     ret = 1;
 err:
-    free(path);
+    if(name)        free(name);
+    if(path)        free(path);
+    if(meta_addr)   free(meta_addr);
+
     return ret;
 }
 

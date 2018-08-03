@@ -33,54 +33,19 @@ typedef struct {
 } ADD_TL_ITR;
 
 Local<Object>
-create_timeline_item(Local<Context> context, Isolate *isolate, 
-                     TSK_FS_FILE* fs_file, const char* path, time_t time,
-                     const char *action) {
+create_timeline_item(Local<Context> context, Isolate *isolate,
+                     TSK_FS_FILE* fs_file, const TSK_FS_ATTR *fs_attr,
+                     const char* a_path, time_t time, const char *action) {
     Local<Value> key;
     Local<Object> item;
     Local<Array> actions;
-    bool allocated;
+    bool fileNameFlag;
     const char* type;
+    TskFile *tskFile;
 
     item = Object::New(isolate);
-
-    // Path
-    key = String::NewFromUtf8(isolate, "path");
-    item->Set(key, String::NewFromUtf8(isolate, path));
-
-    // Name
-    key = String::NewFromUtf8(isolate, "name");
-    item->Set(key, String::NewFromUtf8(isolate, fs_file->name->name));
-
-    // Allocated
-    key = String::NewFromUtf8(isolate, "allocated");
-    allocated = fs_file->name->flags == TSK_FS_NAME_FLAG_ALLOC;
-    item->Set(key, Boolean::New(isolate, allocated));
-
-    // INode
-    key = String::NewFromUtf8(isolate, "inode");
-    item->Set(key, Number::New(isolate, fs_file->name->meta_addr));
-
-    // Type
-    key = String::NewFromUtf8(isolate, "type");
-    switch (fs_file->name->type) {
-        case TSK_FS_NAME_TYPE_REG:
-            type = "register";
-            break;
-
-        case TSK_FS_NAME_TYPE_DIR:
-            type = "directory";
-            break;
-
-        case TSK_FS_NAME_TYPE_VIRT:
-            type = "virtual";
-            break;
-
-        default:
-            type = "unknown";
-            break;
-    }
-    item->Set(key, String::NewFromUtf8(isolate, type));
+    tskFile = new TskFile(fs_file, fs_attr);
+    tskFile->set_properties(isolate, *item, a_path);
 
     // Date
     if (time != 0) {
@@ -88,19 +53,27 @@ create_timeline_item(Local<Context> context, Isolate *isolate,
         item->Set(key, Date::New(context, (double)time * 1000).ToLocalChecked());
     }
 
+    // FILE_NAME
+    fileNameFlag = fs_attr && fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME;
+    key = String::NewFromUtf8(isolate, "fileNameFlag");
+    item->Set(key, Boolean::New(isolate, fileNameFlag));
+
     // Actions
     actions = Array::New(isolate);
     actions->Set(context, 0, String::NewFromUtf8(isolate, action));
     key = String::NewFromUtf8(isolate, "actions");
     item->Set(key, actions);
 
+
+    free(tskFile);
     return item;
 }
 
 void
-dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
-                 const char *action, ADD_TL_ITR *itr) {
-    Local<Value> name_key, date_key, key;
+dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
+                 const char* a_path, time_t time, const char *action,
+                 ADD_TL_ITR *itr) {
+    Local<Value> meta_addr_key, date_key, key;
     Local<Object> item, arr_item;
     Local<Value> it_val;
     Local<Array> items;
@@ -110,31 +83,23 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
     Array *actions;
 
     int start, mid, end;
-    int length, plength, nlength;
+    int length;
     double it_time;
-    char *it_name;
-    char *path;
+    char *it_meta_addr;
+    char *meta_addr = NULL;
     double comp;
 
     context = Context::New(itr->isolate);
-    item = Object::New(itr->isolate);
     items = itr->items;
     args[0] = items;
 
-    // Name
-    plength = strlen(a_path);
-    nlength = strlen(fs_file->name->name);
-    path = (char *) malloc(plength + nlength + 1);
-    memcpy(path, a_path, plength);
-    memcpy(path + plength, fs_file->name->name, nlength + 1);
-
-    name_key = String::NewFromUtf8(itr->isolate, "path");
+    meta_addr_key = String::NewFromUtf8(itr->isolate, "metaAddr");
     date_key = String::NewFromUtf8(itr->isolate, "date");
 
     length = items->Length();
     if (length == 0) {
-        item = create_timeline_item(context, itr->isolate, fs_file,
-                                    path, time, action);
+        item = create_timeline_item(context, itr->isolate, fs_file, fs_attr,
+                                    a_path, time, action);
         items->Set(0, item);
         if (itr->cb)
             itr->cb->Call(context, context->Global(), 1, args);
@@ -144,6 +109,10 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
     start = mid = 0;
     end = length - 1;
     comp = -1;
+
+    if(!TskFile::get_meta_addr(fs_file, fs_attr, &meta_addr)) {
+        return;
+    }
 
     while (start <= end)
     {
@@ -163,15 +132,15 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
         // Compare path
         if (comp == 0) {
             it_val = arr_item
-                    ->Get(context, name_key)
+                    ->Get(context, meta_addr_key)
                     .ToLocalChecked();
 
             String::Utf8Value string(it_val->ToString());
-            it_name = (char *) malloc(string.length() + 1);
-            memcpy(it_name, *string, string.length() + 1);
-            comp = strcmp(path, it_name);
-            
-            free(it_name);
+            it_meta_addr = (char *) malloc(string.length() + 1);
+            memcpy(it_meta_addr, *string, string.length() + 1);
+            comp = strcmp(meta_addr, it_meta_addr);
+
+            free(it_meta_addr);
         }
 
         // Check if x is present at mid
@@ -209,79 +178,125 @@ dicotomic_insert(TSK_FS_FILE * fs_file, const char* a_path, time_t time,
         items->Set(i + 1, items->Get(i));
     }
 
-    item = create_timeline_item(context, itr->isolate, fs_file, path, time,
-                                action);
+    item = create_timeline_item(context, itr->isolate, fs_file, fs_attr, a_path,
+                                time, action);
     items->Set(mid, item);
     if (itr->cb)
         itr->cb->Call(context, context->Global(), 1, args);
     
 err:
-    free(path);
+    if(meta_addr)
+        free(meta_addr);
+}
+
+int
+append_timeline_item(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
+            const char *a_path, ADD_TL_ITR *itr)
+{
+    time_t atime = fs_file->meta->atime,
+           mtime = fs_file->meta->mtime,
+           crtime = fs_file->meta->crtime,
+           ctime = fs_file->meta->ctime;
+
+    if (fs_attr && fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME) {
+        if (fs_file->meta->time2.ntfs.fn_atime)
+            atime = fs_file->meta->time2.ntfs.fn_atime;
+        if (fs_file->meta->time2.ntfs.fn_mtime)
+            mtime = fs_file->meta->time2.ntfs.fn_mtime;
+        if (fs_file->meta->time2.ntfs.fn_crtime)
+            crtime = fs_file->meta->time2.ntfs.fn_crtime;
+        if (fs_file->meta->time2.ntfs.fn_ctime)
+            ctime = fs_file->meta->time2.ntfs.fn_ctime;
+    }
+
+    dicotomic_insert(fs_file, fs_attr, a_path, atime, "access", itr);
+    dicotomic_insert(fs_file, fs_attr, a_path, mtime, "modify", itr);
+    dicotomic_insert(fs_file, fs_attr, a_path, crtime, "creation", itr);
+    dicotomic_insert(fs_file, fs_attr, a_path, ctime, "change", itr);
+
+    return 1;
 }
 
 static TSK_WALK_RET_ENUM
 sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
 {
-//    Local<Object> item;
-//    Local<Value> key;
-//    bool allocated, has_children;
-//    const char* type;
-//    TSK_FS_DIR *fs_dir;
-
-    if (TSK_FS_ISDOT(fs_file->name->name)) {
-        return TSK_WALK_CONT;
-    }
-
+    const TSK_FS_ATTR *fs_attr;
     if (fs_file->name->type == TSK_FS_NAME_TYPE_VIRT) {
         return TSK_WALK_CONT;
     }
-    
+
     if (!fs_file->meta) {
         return TSK_WALK_CONT;
     }
 
-    if (TSK_FS_TYPE_ISNTFS(fs_file->fs_info->ftype)) {
-        // special case for NTFS FILE_NAME attribute
-//        if ((fs_attr) && (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME)) {
-//            /* atime, mtime, ctime, crtime */
-//            if (fs_file->meta->time2.ntfs.fn_atime)
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_atime - time_skew);
-//            else
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_atime);
-//
-//            if (fs_file->meta->time2.ntfs.fn_mtime)
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_mtime - time_skew);
-//            else
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_mtime);
-//
-//            if (fs_file->meta->time2.ntfs.fn_ctime)
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_ctime - time_skew);
-//            else
-//                tsk_fprintf(hFile, "%" PRIu32 "|",
-//                    fs_file->meta->time2.ntfs.fn_ctime);
-//
-//            if (fs_file->meta->time2.ntfs.fn_crtime)
-//                tsk_fprintf(hFile, "%" PRIu32,
-//                    fs_file->meta->time2.ntfs.fn_crtime - time_skew);
-//            else
-//                tsk_fprintf(hFile, "%" PRIu32,
-//                    fs_file->meta->time2.ntfs.fn_crtime);
-//        }
-        return TSK_WALK_CONT;
+    if ((TSK_FS_TYPE_ISNTFS(fs_file->fs_info->ftype))
+        && (fs_file->meta)) {
+        uint8_t printed = 0;
+        int i, cnt;
+
+        // cycle through the attributes
+        cnt = tsk_fs_file_attr_getsize(fs_file);
+        for (i = 0; i < cnt; i++) {
+            const TSK_FS_ATTR *fs_attr = tsk_fs_file_attr_get_idx(fs_file, i);
+            if (!fs_attr)
+                continue;
+
+            if (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_DATA) {
+                printed = 1;
+
+                if (fs_file->meta->type == TSK_FS_META_TYPE_DIR) {
+                    /* we don't want to print the ..:blah stream if
+                        * the -a flag was not given
+                        */
+                    if ((fs_file->name->name[0] == '.')
+                        && (fs_file->name->name[1])
+                        && (fs_file->name->name[2] == '\0')) {
+                        continue;
+                    }
+                }
+
+                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                    return TSK_WALK_ERROR;
+                }
+            } else if (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_IDXROOT) {
+                printed = 1;
+
+                if ( TSK_FS_ISDOT(fs_file->name->name) ) {
+                    continue;
+                }
+
+                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                    return TSK_WALK_ERROR;
+                }
+            } else if ((fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME) &&
+                (fs_attr->id == fs_file->meta->time2.ntfs.fn_id)) {
+                /* If it is . or .. only print it if the flags say so,
+                    * we continue with other streams though in case the
+                    * directory has a data stream
+                    */
+                if ( (TSK_FS_ISDOT(fs_file->name->name)) ) {
+                    continue;
+                }
+
+                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                    return TSK_WALK_ERROR;
+                }
+            }
+        }
+
+        if(printed == 0) {
+            if(!append_timeline_item(fs_file, NULL, a_path, itr)) {
+                return TSK_WALK_ERROR;
+            }
+        }
     } else {
-        dicotomic_insert(fs_file, a_path, fs_file->meta->atime, "access", itr);
-        dicotomic_insert(fs_file, a_path, fs_file->meta->mtime, "modify", itr);
-        dicotomic_insert(fs_file, a_path, fs_file->meta->crtime, "creation",
-                         itr);
-        dicotomic_insert(fs_file, a_path, fs_file->meta->ctime, "change", itr);
-        return TSK_WALK_CONT;
+        if (TSK_FS_ISDOT(fs_file->name->name)) {
+            return TSK_WALK_CONT;
+        }
+        append_timeline_item(fs_file, NULL, a_path, itr);
     }
 
+    return TSK_WALK_CONT;
 }
 
 void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
