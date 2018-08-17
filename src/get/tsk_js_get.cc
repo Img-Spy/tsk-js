@@ -48,7 +48,7 @@ TskFileGetter::GetFileContent(v8::Local<v8::Function> cb)
 {
     EscapableHandleScope handle_scope(this->GetIsolate());
     Local<Object> ret;
-    TSK_FS_FILE *fs_file;
+    TSK_FS_FILE *fs_file = NULL;
 
     TskFileSystem file_sys(this->GetIsolate(), this->GetOptions());
     if (!file_sys.Open() || !file_sys.HasFileSystem()) {
