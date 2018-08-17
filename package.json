@@ -11,7 +11,7 @@
     "clean": "rm -rf build; rm -rf lib/libtsk.a",
     "build": "node-gyp build",
     "build:debug": "node-gyp build --debug",
-    "debug": "cd build; BUILDTYPE=Debug env TZ=UTC TSK_JS_DEBUG=true gdb --args node -r ts-node/register ../test/partial-test.ts",
+    "debug": "cd build; BUILDTYPE=Debug env TZ=UTC TSK_JS_DEBUG=true gdb -x ../script/gdbinit --args node -r ts-node/register ../test/partial-test.ts",
     "docs:build": "./script/build-docs",
     "docs:publish": "./script/publish-docs",
     "docs:serve": "gitbook serve ./docs",

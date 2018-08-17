@@ -47,12 +47,12 @@ private:
 
     TSK_WALK_RET_ENUM Walk(TSK_FS_FILE * fs_file, const char *a_path);
     Local<Object> CreateTimelineItem(TSK_FS_FILE* fs_file,
-        const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+        const TSK_FS_ATTR *fs_attr, const char* a_path, double time,
         const char *action);
     int AppendTimelineItem(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
         const char *a_path);
     void DicotomicInsert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
-        const char* a_path, time_t time, const char *action);
+        const char* a_path, double time, const char *action);
 
     Isolate *_isolate;
     Local<Array> _timeline;
@@ -63,7 +63,7 @@ private:
 
 Local<Object>
 TimelineIterator::CreateTimelineItem(TSK_FS_FILE* fs_file,
-    const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+    const TSK_FS_ATTR *fs_attr, const char* a_path, double time,
     const char *action)
 {
     EscapableHandleScope handle_scope(this->GetIsolate());
@@ -105,7 +105,7 @@ TimelineIterator::CreateTimelineItem(TSK_FS_FILE* fs_file,
 
 void
 TimelineIterator::DicotomicInsert(TSK_FS_FILE *fs_file,
-    const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+    const TSK_FS_ATTR *fs_attr, const char* a_path, double time,
     const char *action)
 {
     Local<Value> meta_addr_key, date_key, key;
@@ -225,10 +225,10 @@ int
 TimelineIterator::AppendTimelineItem(TSK_FS_FILE *fs_file,
     const TSK_FS_ATTR *fs_attr, const char *a_path)
 {
-    time_t atime = fs_file->meta->atime,
-           mtime = fs_file->meta->mtime,
-           crtime = fs_file->meta->crtime,
-           ctime = fs_file->meta->ctime;
+    double atime = (unsigned long) fs_file->meta->atime,
+           mtime = (unsigned long) fs_file->meta->mtime,
+           crtime = (unsigned long) fs_file->meta->crtime,
+           ctime = (unsigned long) fs_file->meta->ctime;
 
     if (fs_attr && fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME) {
         if (fs_file->meta->time2.ntfs.fn_atime)

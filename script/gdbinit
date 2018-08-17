@@ -1,0 +1,8 @@
+# Print string
+define tsp
+call _tsk_js_Print((v8::Local<v8::Value>)($arg0))
+end
+document tsp
+Print a local value as string
+usage: tsp Local<Value>
+end

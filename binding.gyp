@@ -8,6 +8,7 @@
                 "./vendor/sleuthkit/"
             ],
             "sources": [
+                "src/utl/tsk_js_debug.cc",
                 "src/module.cc",
                 "src/tsk_js.cc",
 
@@ -24,6 +25,7 @@
                 "src/get/tsk_js_get.cc",
                 "src/timeline/tsk_js_timeline.cc",
                 "src/search/tsk_js_search.cc"
+
             ]
         }
     ]

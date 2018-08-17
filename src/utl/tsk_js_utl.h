@@ -5,8 +5,8 @@
  * Created on 29 de septiembre de 2017, 12:25
  */
 
-#ifndef NODE_RSA_UTL_H
-#define	NODE_RSA_UTL_H
+#ifndef TSK_JS_UTL_H
+#define TSK_JS_UTL_H
 
 #include <node.h>
 #include <node_buffer.h>
