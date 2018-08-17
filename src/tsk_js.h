@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   tsk_js.h
  * Author: Fernando Román García
  *
@@ -10,10 +10,8 @@
 
 #include <node.h>
 #include <node_object_wrap.h>
-#include <tsk/libtsk.h>
 
-#include "tsk_js_err.h"
-#include "tsk_js_utl.h"
+#include "utl/tsk_js_utl.h"
 
 namespace tsk_js {
 
@@ -40,6 +38,7 @@ private:
     static void Search(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void Get(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
+
 
 }
 

@@ -1,4 +1,4 @@
-import { TSK, 
+import { TSK,
     image, imgaddr,
     getJson, getResource } from "../config";
 import { expect } from "chai";

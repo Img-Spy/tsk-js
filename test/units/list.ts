@@ -1,4 +1,4 @@
-import { TSK, 
+import { TSK,
     image, imgaddr, fileInode,
     getJson, getResource } from "../config";
 import { expect } from "chai";
@@ -49,4 +49,28 @@ export function listNtfs() {
     const result = printFsTree(img, { imgaddr: imgaddr.ntfs });
 
     expect(result).deep.eq(expected.toString());
+}
+
+export function listInvalidFileSystem() {
+    const img = new TSK(image);
+
+    expect(() => {
+        img.list();
+    }).to.throw("Cannot determine file system type");
+}
+
+export function listInvalidArguments() {
+    const img = new TSK(image);
+
+    expect(() => {
+        img.list("foo" as any);
+    }).to.throw("Value of 'options' must be an object");
+
+    expect(() => {
+        img.list({imgaddr: "foo" } as any);
+    }).to.throw("Value of 'options.imgaddr' must be a number");
+
+    expect(() => {
+        img.list({inode: "foo" } as any);
+    }).to.throw("Value of 'options.inode' must be a number");
 }

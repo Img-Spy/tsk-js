@@ -14,7 +14,7 @@ declare namespace TskJs {
     }
 
     export interface TskConstructor {
-        new (...args: any[]): TSK;
+        new (imgfile: string): TSK;
         prototype: TSK;
     }
 

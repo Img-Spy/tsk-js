@@ -1,4 +1,4 @@
-#include "tsk_js.h"
+#include "tsk_js_timeline.h"
 
 #include <string.h>
 
@@ -9,13 +9,16 @@ using v8::Function;
 using v8::FunctionCallbackInfo;
 using v8::FunctionTemplate;
 using v8::Isolate;
+using v8::EscapableHandleScope;
 using v8::Persistent;
 using v8::PropertyAttribute;
 using v8::NewStringType;
 
+using v8::Null;
 using v8::Local;
 using v8::MaybeLocal;
 using v8::Object;
+using v8::ObjectTemplate;
 using v8::Number;
 using v8::String;
 using v8::Boolean;
@@ -25,54 +28,86 @@ using v8::Array;
 using v8::Date;
 using v8::Context;
 
-typedef struct {
-    int i;
-    Local<Array> items;
-    Isolate *isolate;
-    Function *cb;
-} ADD_TL_ITR;
+
+class TimelineIterator {
+public:
+    TimelineIterator(Isolate *isolate, Local<Array> timeline,
+        Local<Function> cb) : _isolate(isolate), _timeline(timeline), _cb(cb),
+        _index(0) {}
+    ~TimelineIterator() {}
+
+    static TSK_WALK_RET_ENUM
+    Action(TSK_FS_FILE * fs_file, const char *a_path, void *ptr)
+    {
+        return ((TimelineIterator *)ptr)->Walk(fs_file, a_path);
+    }
+
+private:
+    Isolate *GetIsolate() { return this->_isolate; }
+
+    TSK_WALK_RET_ENUM Walk(TSK_FS_FILE * fs_file, const char *a_path);
+    Local<Object> CreateTimelineItem(TSK_FS_FILE* fs_file,
+        const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+        const char *action);
+    int AppendTimelineItem(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
+        const char *a_path);
+    void DicotomicInsert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
+        const char* a_path, time_t time, const char *action);
+
+    Isolate *_isolate;
+    Local<Array> _timeline;
+    Local<Function> _cb;
+    int _index;
+};
+
 
 Local<Object>
-create_timeline_item(Local<Context> context, Isolate *isolate,
-                     TSK_FS_FILE* fs_file, const TSK_FS_ATTR *fs_attr,
-                     const char* a_path, time_t time, const char *action) {
+TimelineIterator::CreateTimelineItem(TSK_FS_FILE* fs_file,
+    const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+    const char *action)
+{
+    EscapableHandleScope handle_scope(this->GetIsolate());
+
+    Local<Context> context = this->GetIsolate()->GetCurrentContext();
     Local<Value> key;
-    Local<Object> item;
+    Local<Object> item, empty;
     Local<Array> actions;
     bool fileNameFlag;
-    const char* type;
-    TskFile *tskFile;
+    TskFile tskFile(this->GetIsolate(), fs_file, fs_attr, a_path);
 
-    item = Object::New(isolate);
-    tskFile = new TskFile(fs_file, fs_attr);
-    tskFile->set_properties(isolate, *item, a_path);
+    item = tskFile.GetInfo();
+    if (item.IsEmpty())
+        return empty;
 
     // Date
     if (time != 0) {
-        key = String::NewFromUtf8(isolate, "date");
+        key = String::NewFromUtf8(this->GetIsolate(), "date");
         item->Set(key, Date::New(context, (double)time * 1000).ToLocalChecked());
     }
 
     // FILE_NAME
     fileNameFlag = fs_attr && fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME;
-    key = String::NewFromUtf8(isolate, "fileNameFlag");
-    item->Set(key, Boolean::New(isolate, fileNameFlag));
+    key = String::NewFromUtf8(this->GetIsolate(), "fileNameFlag");
+    item->Set(key, Boolean::New(this->GetIsolate(), fileNameFlag));
 
     // Actions
-    actions = Array::New(isolate);
-    actions->Set(context, 0, String::NewFromUtf8(isolate, action));
-    key = String::NewFromUtf8(isolate, "actions");
+    actions = Array::New(this->GetIsolate());
+    if( !actions->Set(context, 0,
+            String::NewFromUtf8(this->GetIsolate(), action))
+            .ToChecked() ) {
+        return empty;
+    }
+    key = String::NewFromUtf8(this->GetIsolate(), "actions");
     item->Set(key, actions);
 
-
-    free(tskFile);
-    return item;
+    return handle_scope.Escape(item);
 }
 
 void
-dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
-                 const char* a_path, time_t time, const char *action,
-                 ADD_TL_ITR *itr) {
+TimelineIterator::DicotomicInsert(TSK_FS_FILE *fs_file,
+    const TSK_FS_ATTR *fs_attr, const char* a_path, time_t time,
+    const char *action)
+{
     Local<Value> meta_addr_key, date_key, key;
     Local<Object> item, arr_item;
     Local<Value> it_val;
@@ -89,20 +124,19 @@ dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
     char *meta_addr = NULL;
     double comp;
 
-    context = Context::New(itr->isolate);
-    items = itr->items;
+    context = this->GetIsolate()->GetCurrentContext();
+    items = this->_timeline;
     args[0] = items;
 
-    meta_addr_key = String::NewFromUtf8(itr->isolate, "metaAddr");
-    date_key = String::NewFromUtf8(itr->isolate, "date");
+    meta_addr_key = String::NewFromUtf8(this->GetIsolate(), "metaAddr");
+    date_key = String::NewFromUtf8(this->GetIsolate(), "date");
 
     length = items->Length();
     if (length == 0) {
-        item = create_timeline_item(context, itr->isolate, fs_file, fs_attr,
-                                    a_path, time, action);
+        item = this->CreateTimelineItem(fs_file, fs_attr, a_path, time, action);
         items->Set(0, item);
-        if (itr->cb)
-            itr->cb->Call(context, context->Global(), 1, args);
+        if (!this->_cb->IsUndefined())
+            this->_cb->Call(context, context->Global(), 1, args);
         goto err;
     }
 
@@ -110,7 +144,7 @@ dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
     end = length - 1;
     comp = -1;
 
-    if(!TskFile::get_meta_addr(fs_file, fs_attr, &meta_addr)) {
+    if(!TskFile::GetMetaAddr(fs_file, fs_attr, &meta_addr)) {
         return;
     }
 
@@ -145,7 +179,7 @@ dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
 
         // Check if x is present at mid
         if (comp == 0) {
-            break; 
+            break;
         }
 
         // If x greater, ignore left half
@@ -154,19 +188,19 @@ dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
 
         // If x is smaller, ignore right half
         else
-            end = mid - 1; 
+            end = mid - 1;
     }
 
     // The same item exists so append action
     if (comp == 0) {
-        key = String::NewFromUtf8(itr->isolate, "actions");
+        key = String::NewFromUtf8(this->GetIsolate(), "actions");
         actions = Array::Cast(
             *(arr_item->Get(context, key).ToLocalChecked())
         );
-        actions->Set(actions->Length(),
-                     String::NewFromUtf8(itr->isolate, action));
-        if (itr->cb)
-            itr->cb->Call(context, context->Global(), 1, args);
+        actions->Set(context, actions->Length(),
+                    String::NewFromUtf8(this->GetIsolate(), action));
+        if (!this->_cb->IsUndefined())
+            this->_cb->Call(context, context->Global(), 1, args);
         goto err;
     }
 
@@ -178,20 +212,18 @@ dicotomic_insert(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
         items->Set(i + 1, items->Get(i));
     }
 
-    item = create_timeline_item(context, itr->isolate, fs_file, fs_attr, a_path,
-                                time, action);
+    item = this->CreateTimelineItem(fs_file, fs_attr, a_path, time, action);
     items->Set(mid, item);
-    if (itr->cb)
-        itr->cb->Call(context, context->Global(), 1, args);
-    
+    if (!this->_cb->IsUndefined())
+        this->_cb->Call(context, context->Global(), 1, args).ToLocalChecked();
+
 err:
-    if(meta_addr)
-        free(meta_addr);
+    if(meta_addr)   free(meta_addr);
 }
 
 int
-append_timeline_item(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
-            const char *a_path, ADD_TL_ITR *itr)
+TimelineIterator::AppendTimelineItem(TSK_FS_FILE *fs_file,
+    const TSK_FS_ATTR *fs_attr, const char *a_path)
 {
     time_t atime = fs_file->meta->atime,
            mtime = fs_file->meta->mtime,
@@ -209,18 +241,17 @@ append_timeline_item(TSK_FS_FILE *fs_file, const TSK_FS_ATTR *fs_attr,
             ctime = fs_file->meta->time2.ntfs.fn_ctime;
     }
 
-    dicotomic_insert(fs_file, fs_attr, a_path, atime, "access", itr);
-    dicotomic_insert(fs_file, fs_attr, a_path, mtime, "modify", itr);
-    dicotomic_insert(fs_file, fs_attr, a_path, crtime, "creation", itr);
-    dicotomic_insert(fs_file, fs_attr, a_path, ctime, "change", itr);
+    this->DicotomicInsert(fs_file, fs_attr, a_path, atime, "access");
+    this->DicotomicInsert(fs_file, fs_attr, a_path, mtime, "modify");
+    this->DicotomicInsert(fs_file, fs_attr, a_path, crtime, "creation");
+    this->DicotomicInsert(fs_file, fs_attr, a_path, ctime, "change");
 
     return 1;
 }
 
-static TSK_WALK_RET_ENUM
-sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
+TSK_WALK_RET_ENUM
+TimelineIterator::Walk(TSK_FS_FILE * fs_file, const char *a_path)
 {
-    const TSK_FS_ATTR *fs_attr;
     if (fs_file->name->type == TSK_FS_NAME_TYPE_VIRT) {
         return TSK_WALK_CONT;
     }
@@ -255,7 +286,7 @@ sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
                     }
                 }
 
-                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                if(!this->AppendTimelineItem(fs_file, fs_attr, a_path)) {
                     return TSK_WALK_ERROR;
                 }
             } else if (fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_IDXROOT) {
@@ -265,7 +296,7 @@ sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
                     continue;
                 }
 
-                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                if(!this->AppendTimelineItem(fs_file, fs_attr, a_path)) {
                     return TSK_WALK_ERROR;
                 }
             } else if ((fs_attr->type == TSK_FS_ATTR_TYPE_NTFS_FNAME) &&
@@ -278,14 +309,14 @@ sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
                     continue;
                 }
 
-                if(!append_timeline_item(fs_file, fs_attr, a_path, itr)) {
+                if(!this->AppendTimelineItem(fs_file, fs_attr, a_path)) {
                     return TSK_WALK_ERROR;
                 }
             }
         }
 
         if(printed == 0) {
-            if(!append_timeline_item(fs_file, NULL, a_path, itr)) {
+            if(!this->AppendTimelineItem(fs_file, NULL, a_path)) {
                 return TSK_WALK_ERROR;
             }
         }
@@ -293,77 +324,67 @@ sort_fs_events(TSK_FS_FILE * fs_file, const char *a_path, ADD_TL_ITR *itr)
         if (TSK_FS_ISDOT(fs_file->name->name)) {
             return TSK_WALK_CONT;
         }
-        append_timeline_item(fs_file, NULL, a_path, itr);
+        this->AppendTimelineItem(fs_file, NULL, a_path);
     }
 
     return TSK_WALK_CONT;
 }
 
-void TSK::Timeline(const FunctionCallbackInfo<Value>& args)
+// -----------------------------
+// --- B a s e   O b j e c t ---
+// -----------------------------
+
+TskTimeline::TskTimeline(Isolate *isolate, TskOptions *opts) :
+    _isolate(isolate), _opts(opts) { }
+
+TskTimeline::~TskTimeline() { }
+
+Isolate *
+TskTimeline::GetIsolate()
 {
-    TSK_FS_TYPE_ENUM fstype = TSK_FS_TYPE_DETECT;
-    TSK_FS_INFO *fs = NULL;
-    TskOptions *opts = NULL;
+    return this->_isolate;
+}
 
-    // Walk configurations
-    ADD_TL_ITR itr;
-    int name_flags = TSK_FS_DIR_WALK_FLAG_ALLOC |
-                     TSK_FS_DIR_WALK_FLAG_UNALLOC |
-                     TSK_FS_DIR_WALK_FLAG_RECURSE;
+// -----------------------------------
+// --- O b j e c t   M e t h o d s ---
+// -----------------------------------
 
-    Isolate* isolate = args.GetIsolate();
-    TSK *self = TSK::Unwrap<TSK>(args.Holder());
-    Local<Value> ret;
+Local<Object>
+TskTimeline::GenerateTimeline(Local<Function> cb)
+{
+    EscapableHandleScope handle_scope(this->GetIsolate());
+    TskOptions *opts = this->_opts;
+    Local<Object> ret;
 
-    /* Callback function */
-    if (args.Length() == 0 || !args[0]->IsFunction()) {
-        NODE_THROW_EXCEPTION_err(isolate, _E_M_LS_INODE_NOT_NUMBER);
-    }
-
-    // Process input args
-    opts = new TskOptions(self->_img, args, 1);
-    if (opts->has_error()) {
+    // Check image type
+    TskFileSystem file_sys(this->GetIsolate(), opts);
+    if (!file_sys.Open() || !file_sys.HasFileSystem()) {
+        NODE_THROW_EXCEPTION(this->GetIsolate(),
+            "Cannot determine file system type");
         goto err;
     }
 
-    // Check image type
-    fs = tsk_fs_open_img(self->_img, opts->get_offset(), fstype);
-    if (fs == NULL) {
-        if (tsk_error_get_errno() == TSK_ERR_FS_UNKTYPE) {
-            ret = Boolean::New(isolate, false);
+    {
+        Local<Array> timeline = Array::New(this->GetIsolate());
+        TimelineIterator itr(this->GetIsolate(), timeline, cb);
+        int name_flags = TSK_FS_DIR_WALK_FLAG_ALLOC |
+                        TSK_FS_DIR_WALK_FLAG_UNALLOC |
+                        TSK_FS_DIR_WALK_FLAG_RECURSE;
+
+        int err = file_sys.Walk((TSK_FS_DIR_WALK_FLAG_ENUM) name_flags,
+            itr.Action, &itr);
+
+        if (err) {
+            tsk_error_print(stderr);
+            NODE_THROW_EXCEPTION(this->GetIsolate(), _E_M_SOMETINK_WRONG);
             goto err;
         }
-        tsk_error_print(stderr);
-        NODE_THROW_EXCEPTION_err(isolate, _E_M_SOMETINK_WRONG);
+
+        ret = timeline;
     }
-
-    if (!opts->has_inode()) {
-        opts->set_inode(fs->root_inum);
-    }
-
-    // Init iterator
-    itr.i = 0;
-    itr.items = Array::New(isolate);
-    itr.isolate = isolate;
-    itr.cb = Function::Cast(*args[0]);
-
-    // Iterate partitions and add them inside the list
-    if (tsk_fs_dir_walk(fs, opts->get_inode(), 
-        (TSK_FS_DIR_WALK_FLAG_ENUM) name_flags,
-        (TSK_FS_DIR_WALK_CB) sort_fs_events, &itr)) {
-        tsk_error_print(stderr);
-        fs->close(fs);
-        exit(1);
-    }
-
-    ret = itr.items;
 
 err:
-    if (fs) {
-        fs->close(fs);
-    }
-    delete opts;
-    args.GetReturnValue().Set(ret);
+    return handle_scope.Escape(ret);
 }
 
 

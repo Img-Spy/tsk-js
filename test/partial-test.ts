@@ -1,5 +1,5 @@
 import { AssertionError } from "chai";
-import * as tsk from "./tsk.units";
+import * as tsk from "./units";
 
 function runTest(testName) {
     console.log(`Run file partial test "${testName}"`);

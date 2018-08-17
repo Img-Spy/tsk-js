@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   tsk_js_err.h
  * Author: Fernando Román García
  *
@@ -8,7 +8,7 @@
 #ifndef TSK_JS_ERR_H
 #define	TSK_JS_ERR_H
 
-namespace tsk_utl {
+namespace tsk_js {
 
 // ERROR MESSAGES
 
@@ -39,13 +39,14 @@ namespace tsk_utl {
     "The certificate is untrustable."
 
 // LS ERRORS
-#define _E_M_LS_OFFSET_NOT_NUMBER \
-    "List offset must be a number."
-#define _E_M_LS_OPTIONS_NOT_OBJECT \
-    "List options must be an object."
-#define _E_M_LS_INODE_NOT_NUMBER \
-    "List inode must be a number."
-    
+#define _E_M_OFFSET_NOT_NUMBER \
+    "Value of 'options.imgaddr' must be a number."
+#define _E_M_OPTIONS_NOT_OBJECT \
+    "Value of 'options' must be an object."
+#define _E_M_INODE_NOT_NUMBER \
+    "Value of 'options.inode' must be a number."
+
+
 }
 
 #endif
