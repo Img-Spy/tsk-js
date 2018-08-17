@@ -12,7 +12,7 @@
 #include <node_buffer.h>
 
 
-void _tsk_js_Print_String(v8::Local<v8::Value> str);
+void _tsk_js_Print(v8::Local<v8::Value> str);
 
 
 #endif

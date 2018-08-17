@@ -92,11 +92,9 @@ TimelineIterator::CreateTimelineItem(TSK_FS_FILE* fs_file,
 
     // Actions
     actions = Array::New(this->GetIsolate());
-    if( !actions->Set(context, 0,
-            String::NewFromUtf8(this->GetIsolate(), action))
-            .ToChecked() ) {
-        return empty;
-    }
+    actions->Set(context, 0,
+            String::NewFromUtf8(this->GetIsolate(), action));
+
     key = String::NewFromUtf8(this->GetIsolate(), "actions");
     item->Set(key, actions);
 
