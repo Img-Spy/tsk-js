@@ -133,7 +133,7 @@ TimelineIterator::DicotomicInsert(TSK_FS_FILE *fs_file,
     if (length == 0) {
         item = this->CreateTimelineItem(fs_file, fs_attr, a_path, time, action);
         items->Set(0, item);
-        if (!this->_cb->IsUndefined())
+        if (!this->_cb.IsEmpty())
             this->_cb->Call(context, context->Global(), 1, args);
         goto err;
     }
@@ -197,7 +197,7 @@ TimelineIterator::DicotomicInsert(TSK_FS_FILE *fs_file,
         );
         actions->Set(context, actions->Length(),
                     String::NewFromUtf8(this->GetIsolate(), action));
-        if (!this->_cb->IsUndefined())
+        if (!this->_cb.IsEmpty())
             this->_cb->Call(context, context->Global(), 1, args);
         goto err;
     }
@@ -212,7 +212,7 @@ TimelineIterator::DicotomicInsert(TSK_FS_FILE *fs_file,
 
     item = this->CreateTimelineItem(fs_file, fs_attr, a_path, time, action);
     items->Set(mid, item);
-    if (!this->_cb->IsUndefined())
+    if (!this->_cb.IsEmpty())
         this->_cb->Call(context, context->Global(), 1, args).ToLocalChecked();
 
 err:

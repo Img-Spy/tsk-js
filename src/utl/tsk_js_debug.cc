@@ -41,6 +41,7 @@ private:
     void PrintText(const char *txt) { fprintf(this->_file, "%s", txt); }
     void PrintObject(Local<Object> obj);
     void PrintArray(Local<Array> val);
+    void PrintFunction(Local<Function> val);
     void PrintDefault(Local<Value> val);
 
     Isolate *_isolate;
@@ -87,6 +88,12 @@ TskJsPrint::PrintArray(Local<Array> arr)
 }
 
 void
+TskJsPrint::PrintFunction(Local<Function> func)
+{
+    fprintf(this->_file, "[Function]");
+}
+
+void
 TskJsPrint::PrintDefault(Local<Value> val)
 {
     EscapableHandleScope handle_scope(this->GetIsolate());
@@ -107,6 +114,8 @@ TskJsPrint::Print(Local<Value> val)
         return;
     if (val->IsArray())
         return this->PrintArray(Local<Array>::Cast(val));
+    if (val->IsFunction())
+        return this->PrintFunction(Local<Function>::Cast(val));
     if (val->IsDate())
         return this->PrintDefault(val);
     if (val->IsObject())

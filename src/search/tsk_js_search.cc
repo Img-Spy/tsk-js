@@ -79,9 +79,9 @@ SearchIterator::Walk(TSK_FS_FILE * fs_file, const char *a_path)
     EscapableHandleScope handle_scope(this->GetIsolate());
 
     Local<Context> context;
-    Local<Value> item;
+    Local<Object> item, file;
+    Local<Value> buffer, character;
     char *str_context, *data;
-    Local<Value> args[3];
     size_t from, to, window, size;
 
     if (TSK_FS_ISDOT(fs_file->name->name)) {
@@ -119,11 +119,10 @@ SearchIterator::Walk(TSK_FS_FILE * fs_file, const char *a_path)
             }
 
             if (found) {
-                item = tsk_file.GetInfo();
-                if (item.IsEmpty()) {
+                file = tsk_file.GetInfo();
+                if (file.IsEmpty()) {
                     return TSK_WALK_ERROR;
                 }
-                args[0] = item;
 
                 if (i > this->_window) {
                     from = i - this->_window / 2;
@@ -139,12 +138,33 @@ SearchIterator::Walk(TSK_FS_FILE * fs_file, const char *a_path)
                 window = to - from;
                 str_context = (char *)malloc(window);
                 memcpy(str_context, data + from, window);
-                args[1] = Buffer::New(this->GetIsolate(), str_context, window)
+                buffer = Buffer::New(this->GetIsolate(), str_context, window)
                             .ToLocalChecked();
 
-                args[2] = Number::New(this->GetIsolate(), i);
+                character = Number::New(this->GetIsolate(), i);
 
-                this->_cb->Call(context, context->Global(), 3, args);
+                item = Object::New(this->GetIsolate());
+                item->Set(
+                    String::NewFromUtf8(this->GetIsolate(), "file"),
+                    file
+                );
+                item->Set(
+                    String::NewFromUtf8(this->GetIsolate(), "context"),
+                    buffer
+                );
+                item->Set(
+                    String::NewFromUtf8(this->GetIsolate(), "character"),
+                    character
+                );
+                this->_matches->Set(this->_index++, item);
+
+                if(!this->_cb.IsEmpty()) {
+                    Local<Value> args[3] = {
+                        item,
+                        Number::New(this->GetIsolate(), this->_index)
+                    };
+                    this->_cb->Call(context, context->Global(), 2, args);
+                }
             }
         }
 
