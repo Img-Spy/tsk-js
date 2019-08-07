@@ -102,6 +102,7 @@ void TSK::Init(Local<Object> exports)
 
     constructor.Reset(isolate, tpl->GetFunction());
     exports->Set(String::NewFromUtf8(isolate, "TSK"), tpl->GetFunction());
+    exports->Set(String::NewFromUtf8(isolate, "default"), tpl->GetFunction());
 }
 
 void TSK::Analyze(const FunctionCallbackInfo<Value>& args)

@@ -1,11 +1,15 @@
+declare module 'tsk-js' {
+    export default TskJs.TSK;
+}
+
 declare namespace TskJs {
-    export class TSK {
+    class TSK {
         /**
          * Constructor
          * @param imgfile Path to an image file
          */
         constructor(imgfile: string);
-
+ 
         analyze(): ImgInfo;
         list(opts?: TskOptions): Array<ImgFile>;
         get(opts?: TskOptions): Buffer;
@@ -57,8 +61,4 @@ declare namespace TskJs {
         fileNameFlag: Boolean;
         date: Date;
     }
-}
-
-declare module 'tsk-js' {
-    export = TskJs;
 }

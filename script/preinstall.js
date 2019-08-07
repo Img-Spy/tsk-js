@@ -12,9 +12,7 @@ const unzip$ = Rx.Observable.of({
     vendorDir: path.join(__dirname, "../vendor"),
     vendorZip: path.join(__dirname, "../vendor.zip")
 })
-.filter((session) => {
-    return fs.existsSync(session.vendorZip)
-})
+.filter((session) => fs.existsSync(session.vendorZip))
 // Unzip
 .mergeMap(session => Rx.Observable.create(observer => {
     extractZip(session.vendorZip, { dir: session.vendorDir }, (err) => {
@@ -23,7 +21,7 @@ const unzip$ = Rx.Observable.of({
         } else {
             observer.next(session);
         }
-    })
+    });
 }))
 .mapTo("Extracted vendor.zip")
 
@@ -32,9 +30,7 @@ const download$ = Rx.Observable.of({
     baseUrl: "http://docs-tsk-js.54.37.131.126.xip.io/download",
     libFile: path.join(__dirname, "../lib/libtsk.a")
 })
-.filter((session) => {
-    return !fs.existsSync(session.libFile)
-})
+.filter((session) => !fs.existsSync(session.libFile))
 // Download file
 .mergeMap(session => Rx.Observable.create(observer => {
     const url = `${session.baseUrl}/${libUrl}`;
@@ -46,7 +42,7 @@ const download$ = Rx.Observable.of({
             observer.next(session); 
         }
         observer.complete();
-    })
+    });
 }))
 .filter(session => session.response.statusCode === 200)
 .map(session => {

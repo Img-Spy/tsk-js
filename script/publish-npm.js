@@ -5,7 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const rimraf = require("rimraf");
 const childProcess = require("child_process");
-const zipFolder = require("zip-folder");
+const zipFolder = require("zip-a-folder");
 const rootPackageJson = require("../package.json");
 
 
@@ -14,7 +14,7 @@ const copyFiles = [
     "vendor(\/.+)?",
     "script(\/.+)?",
     "typings(\/.+)?",
-    "lib(\/\.empty)?",
+    "lib(\/tsk(\/.+)?)?",
     "binding.gyp",
     "LICENSE",
     "README.md",
@@ -40,7 +40,7 @@ const vendorZip$ = (session) => Rx.Observable.of({})
         if(code !== 0) {
             observer.error("Cannot clean sleuthkit folder");
         } else {
-            console.log(`Sleuthkit cleaned`);
+            console.log(`Make clean executed`);
             observer.next(subSession);
         }
     });
@@ -76,7 +76,7 @@ const vendorZip$ = (session) => Rx.Observable.of({})
 }))
 // Create vendor zip
 .mergeMap(subSession => Rx.Observable.create((observer) => {
-    zipFolder(subSession.vendorDir, subSession.vendorTar, (err) => {
+    zipFolder.zipFolder(subSession.vendorDir, subSession.vendorTar, (err) => {
         if(err) {
             observer.error("Cannot create vendor zip");
         } else {

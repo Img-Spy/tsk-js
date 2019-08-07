@@ -14,16 +14,6 @@ lib_path = "./lib"
 
 
 def compile_sleuthkit():
-    print("Build sleutkit library")
-    execute("make", cwd=sleuthkit_path)
-
-    print("Copy library")
-    shutil.copy(sleuthkit_comp_lib_path, lib_path)
-
-
-def main():
-    execute(["node", "preinstall.js"], cwd=dir_path, print_stdout=True)
-
     print("Prepare sleutkit library")
     if not file_exists(sleuthkit_path + "/configure"):
         print("  - Bootstrap")
@@ -45,6 +35,16 @@ def main():
                 env[key] = value
 
         execute(config_cmd, cwd=sleuthkit_path, env=env)
+
+    print("Build sleutkit library")
+    execute("make", cwd=sleuthkit_path)
+
+    print("Copy library")
+    shutil.copy(sleuthkit_comp_lib_path, lib_path)
+
+
+def main():
+    execute(["node", "preinstall.js"], cwd=dir_path, print_stdout=True)
 
     if not file_exists(sleuthkit_lib_path):
         compile_sleuthkit()

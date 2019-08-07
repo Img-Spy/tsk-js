@@ -5,7 +5,7 @@
             # Path relative to source files (./src)
             "libraries": ["-Wl,-Bsymbolic,../lib/libtsk.a"],
             "include_dirs": [
-                "./vendor/sleuthkit/"
+                "./lib/"
             ],
             "sources": [
                 "src/utl/tsk_js_debug.cc",

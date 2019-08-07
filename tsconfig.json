@@ -3,11 +3,8 @@
     "module": "commonjs",
     "target": "es5",
     "typeRoots": [
-      "./node_modules/@types",
-      "./typings"
-    ],
-    "types": [
-      "tsk-js", "node", "mocha"
+      "./typings",
+      "./node_modules/@types"
     ]
   }
 }
