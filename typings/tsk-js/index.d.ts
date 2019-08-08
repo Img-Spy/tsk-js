@@ -1,4 +1,12 @@
 declare module 'tsk-js' {
+    export type ImgInfo = TskJs.ImgInfo;
+    export type TskOptions = TskJs.TskOptions;
+    export type PartitionInfo = TskJs.PartitionInfo;
+    export type ImgFile = TskJs.ImgFile;
+    export type DiskAction = TskJs.DiskAction;
+    export type TimelineCallback = TskJs.TimelineCallback;
+    export type SearchCallback = TskJs.SearchCallback;
+    export type TimelineItem = TskJs.TimelineItem;
     export default TskJs.TSK;
 }
 
