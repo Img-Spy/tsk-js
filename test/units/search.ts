@@ -7,7 +7,7 @@ export function search() {
     const img = new TSK(image);
     const needle = "CocaCola";
     const search = [];
-    const cb = (item, context) => search.push({ item, context: context.toString() });
+    const cb = (item, index) => search.push({ item, index });
 
     img.search(needle, cb, { imgaddr: imgaddr.fat });
 

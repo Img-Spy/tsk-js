@@ -59,10 +59,16 @@ declare namespace TskJs {
         hasChildren?: boolean;
     }
 
+    export interface SearchResult {
+        file: string;
+        context: string;
+        character: string;
+    }
+
     export type DiskAction = "access" | "modify" | "creation" | "change";
     export type TimelineCallback = (list: Array<TimelineItem>) => void;
     export type SearchCallback =
-        (file: ImgFile, context: Buffer, index: number) => void;
+        (file: SearchResult, index: number) => void;
 
     export interface TimelineItem extends ImgFile {
         actions: Array<DiskAction>;
