@@ -14,7 +14,7 @@ lib_path = "./lib"
 
 
 def compile_sleuthkit():
-    print("Prepare sleutkit library")
+    print("Prepare sleuthkit library")
     if not file_exists(sleuthkit_path + "/configure"):
         print("  - Bootstrap")
         execute("./bootstrap", cwd=sleuthkit_path)
