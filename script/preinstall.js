@@ -44,25 +44,32 @@ const download$ = Rx.Observable.of({
         observer.complete();
     });
 }))
-.filter(session => session.response.statusCode === 200)
-.map(session => {
+.filter(session => {
+    if(session.response.statusCode === 200) {
+        return true;
+    }
+    switch(session.response.statusCode) {
+        case 404:
+            console.log(`[404 NOT FOUND] ${libUrl}`);
+            break;
+    }
+    return false;
+})
+.do(session => {
     fs.writeFile(session.libFile, session.body, 'binary', function (err) {});
 })
 .mapTo(`Downloaded ${libUrl}`)
 
 
-const preinstall = [
-    unzip$,
-    download$
-];
-
-
-const main = () => {
-    preinstall.forEach(obs$ => obs$.subscribe(
-        x => console.log(x),
-        err => console.log(err),
+// Main execution
+!function main() {
+    // List of flows to execute
+    [
+        unzip$,
+        download$
+    ].forEach(obs$ => obs$.subscribe(
+        x => x ? console.log(`${x}`) : console.log(obs$),
+        err => console.log(`Error: ${err}`),
         () => {}
     ));
-}
-
-main();
+}();

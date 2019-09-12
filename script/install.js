@@ -9,10 +9,10 @@ const { ncp } = require("ncp");
 const root = path.resolve(__dirname, "..");
 const sleuthkitPath = path.resolve(root, "./vendor/sleuthkit")
 const sleuthkitCompLibPath = path.resolve(sleuthkitPath, "tsk/.libs/libtsk.a");
-const sleuthkitLibPath = path.resolve(root, "./lib/libtsk.a");
+const libPath = path.resolve(root, "./lib");
+const sleuthkitLibFile = path.resolve(libPath, "./libtsk.a");
 
-const preinstallFile = path.resolve(root, "./script/preinstall.js")
-const libPath = path.resolve("./lib");
+const preinstallFile = path.resolve(root, "./script/preinstall.js");
 
 
 const compileSleuthkit = () => {
@@ -53,20 +53,31 @@ const compileSleuthkit = () => {
     spawnSync("make", { cwd: sleuthkitPath });
 
     console.log("Copy library");
-    ncp(sleuthkitCompLibPath, sleuthkitLibPath);
+    ncp(sleuthkitCompLibPath, libPath);
+}
+
+const compileTskJs = () => {
+    console.log("Build tsk-js");
+    const spawnResult = spawnSync("node-gyp", ["rebuild"], {
+        stdio: ['ignore', 'ignore', 'pipe']
+    });
+    if(spawnResult.status !== 0) {
+        console.error(`[Error] Cannot build 'tsk-js'`);
+        console.log(spawnResult.stderr.toString());
+    }
 }
 
 !function main() {
+    // Run pre installation process
     spawnSync("node", [preinstallFile], {
         stdio: 'inherit'
     });
 
-    if(fs.existsSync(sleuthkitLibPath)) {
+    if(!fs.existsSync(sleuthkitLibFile)) {
         compileSleuthkit();
     }
 
-    console.log("Build tsk-js");
-    if(fs.existsSync("./build/Release/tsk-js.node")) {
-        spawnSync("node-gyp", ["rebuild"]);
+    if(!fs.existsSync("./build/Release/tsk-js.node")) {
+        compileTskJs();
     }
-}()
+}();
