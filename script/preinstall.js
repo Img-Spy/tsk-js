@@ -17,10 +17,11 @@ const unzip$ = Rx.Observable.of({
 .mergeMap(session => Rx.Observable.create(observer => {
     extractZip(session.vendorZip, { dir: session.vendorDir }, (err) => {
         if(err) {
-            console.log("")
+            observer.error(`Cannot extract ${session.vendorZip}`);
         } else {
             observer.next(session);
         }
+        observer.complete();
     });
 }))
 .mapTo("Extracted vendor.zip")
@@ -35,7 +36,7 @@ const download$ = Rx.Observable.of({
 .mergeMap(session => Rx.Observable.create(observer => {
     const url = `${session.baseUrl}/${libUrl}`;
     request(url, {encoding: 'binary'}, function (error, response, body) {
-        if (error) { observer.error(); }
+        if (error) { observer.error(error); }
         else { 
             session.response = response;
             session.body = body;
