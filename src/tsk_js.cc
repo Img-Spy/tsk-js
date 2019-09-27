@@ -6,6 +6,7 @@
 #include "search/tsk_js_search.h"
 
 #include <string.h>
+#include <signal.h>
 
 namespace tsk_js {
 
@@ -44,6 +45,7 @@ TSK::TSK(Isolate *isolate, Local<String> input)
     this->_img = tsk_img_open(1, &imgfile, imgtype, (unsigned int) 0);
 
     if(!this->_img) {
+        // tsk_error_print(stderr);
         NODE_THROW_EXCEPTION(isolate, _E_M_IMG_NOT_FOUND);
     }
 }

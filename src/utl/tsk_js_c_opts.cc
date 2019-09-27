@@ -44,8 +44,14 @@ TskConstructionOptions::Initialize(Local<String> imgfile)
     String::Utf8Value string(imgfile);
 
     length = string.length() + 1;
-    this->_imgfile = (char *)malloc(length);
+
+#ifdef USE_WCHAR_TSK_CHAR
+    this->_imgfile = new WCHAR[length];
+    MultiByteToWideChar(CP_ACP, 0, *string, -1, (LPWCH) this->_imgfile, length);
+#else
+    this->_imgfile = (TSK_TCHAR *)malloc(length);
     memcpy(this->_imgfile, *string, length);
+#endif
 
     return 1;
 }
@@ -56,7 +62,7 @@ TskConstructionOptions::GetIsolate()
     return this->_isolate;
 }
 
-const char *
+const TSK_TCHAR *
 TskConstructionOptions::GetImgfile()
 {
     return this->_imgfile;

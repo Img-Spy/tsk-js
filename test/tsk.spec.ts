@@ -4,6 +4,8 @@ import { expect } from "chai";
 import * as hashFiles from "hash-files";
 import * as tsk from "./units";
 
+
+
 describe("TSK", function () {
     this.slow(300);
 
@@ -41,7 +43,12 @@ describe("TSK", function () {
     describe("#timeline()", function() {
         this.slow(1000);
 
-        it("should generate timelines inside a FAT partition", tsk.timelineFat);
+        if(process.platform === 'win32') {
+            it.skip("[PENDING ON WINDOWS] should generate timelines inside a FAT partition", tsk.timelineFat);
+        } else {
+            it("should generate timelines inside a FAT partition", tsk.timelineFat);
+        }
+
         it("should generate timelines inside a NTFS partition",
             tsk.timelineNtfs);
     });

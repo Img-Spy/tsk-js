@@ -11,17 +11,18 @@ const rootPackageJson = require("../package.json");
 
 const copyFiles = [
     "src(\/.+)?",
-    "vendor(\/.+)?",
+    // "vendor(\/.+)?",
     "script(\/.+)?",
     "typings(\/.+)?",
-    "lib(\/tsk(\/.+)?)?",
+    "misc(\/.+)?",
+    // "lib(\/tsk(\/.+)?)?",
     "binding.gyp",
     "LICENSE",
     "README.md",
     "package.json"
 ];
 
-const cleanSleutkitFiles = [
+const cleanSleuthkitFiles = [
     "configure", "Makefile"
 ];
 
@@ -45,9 +46,9 @@ const vendorZip$ = (session) => Rx.Observable.of({})
         }
     });
 }))
-// Remove sleuthit ignored files
+// Remove sleuthkit ignored files
 .mergeMap(subSession => Rx.Observable.create((observer) => {
-    deleteFiles(cleanSleutkitFiles, (err) => {
+    deleteFiles(cleanSleuthkitFiles, (err) => {
         if(err) {
             observer.error("Cannot clean sleuthkit folder");
         } else {
@@ -60,9 +61,9 @@ const vendorZip$ = (session) => Rx.Observable.of({})
 
     function deleteFiles(files, callback) {
         var i = files.length;
-        files.forEach(function (relfilepath) {
-            const filepath = path.join(subSession.sleuthkitPath, relfilepath);
-            fs.unlink(filepath, function (err) {
+        files.forEach(function (relFilePath) {
+            const filePath = path.join(subSession.sleuthkitPath, relFilePath);
+            fs.unlink(filePath, function (err) {
                 i--;
                 if (err) {
                     callback(err);
@@ -164,7 +165,7 @@ const publish$ = Rx.Observable.of({})
 
     // child.on('close', (code) => {
     //     if(code !== 0) {
-    //         observer.error("Install test failled");
+    //         observer.error("Install test failed");
     //     } else {
     //         console.log(`Test finished successfully`);
     //         observer.next(session);
