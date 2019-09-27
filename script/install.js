@@ -49,8 +49,14 @@ const execPromise = (command, args, options) => new Promise((resolve, reject) =>
             resolve(stdout);
         }
     });
+
+    child.stderr.on('data', function (data) {
+        console.log(data.toString());
+    });
     child.once("exit", (code, signal) => {
-        reject({code});
+        if(code) {
+            reject({code});
+        }
     });
 });
 
@@ -132,6 +138,7 @@ const compileTskJs = async () => {
             cwd: rootFolder
         }).catch((result) => {
             console.error(`[Error] Cannot build 'tsk-js'`);
+            process.exit(1);
         })
     }
 }
@@ -139,7 +146,7 @@ const compileTskJs = async () => {
 const extractLib = async () => {
     const libFolder = path.resolve(rootFolder, "lib");
     if(!await exists(libFolder)) {
-        console.log("Extract library");
+        console.log(`Extract library '${process.platform}/${process.arch}'`);
         const libZip = path.resolve(rootFolder, "misc", process.platform, process.arch,
             "tsk-js-lib.zip");
 
