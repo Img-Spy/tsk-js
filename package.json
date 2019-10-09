@@ -1,6 +1,6 @@
 {
   "name": "tsk-js",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A module that allows you to investigate disk images using Javascript by using The Sleuth Kit as library.",
   "main": "build/Release/tsk-js.node",
   "author": "frg",
@@ -8,7 +8,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register test/tsk.spec.ts",
     "install": "node ./script/install.js",
-    "clean": "rm -rf build; rm -rf lib/libtsk.a",
+    "clean": "rm -rf build lib",
     "build": "node-gyp rebuild",
     "build:debug": "node-gyp build --debug",
     "debug": "cd build; BUILDTYPE=Debug env TZ=UTC TSK_JS_DEBUG=true gdb -x ../script/gdbinit --args node -r ts-node/register ../test/partial-test.ts",
